@@ -1,0 +1,36 @@
+<header class="site-header">
+  <div class="campaign-topbar">
+    <a href="__BASE__/catalogo/" data-route="/catalogo">
+      <span data-campaign-kicker>Temporada activa</span>
+      <strong data-campaign-title>Regalos personalizados para empresas</strong>
+      <span data-campaign-offer>Agenda tu pedido con anticipacion</span>
+    </a>
+  </div>
+  <nav class="nav-shell" aria-label="Navegacion principal">
+    <a class="brand" href="__BASE__/" data-route="/" aria-label="Luna Creativa tienda">
+      <img src="__BASE__/assets/img/logo/luna-creativa.png" alt="Logo Luna Creativa" width="42" height="42">
+      <span>Luna Creativa</span>
+    </a>
+    <form class="site-search" id="siteSearch" role="search">
+      <input id="siteSearchInput" type="search" autocomplete="off" placeholder="Buscar regalos, rompecabezas, mugs...">
+      <button type="submit" aria-label="Buscar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      </button>
+      <div class="site-search__suggestions" id="siteSearchSuggestions" aria-live="polite"></div>
+    </form>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteMenu">
+      Menu
+    </button>
+    <div class="nav-links" id="siteMenu">
+      <a href="__BASE__/" data-route="/">Inicio</a>
+      <a href="__BASE__/catalogo/" data-route="/catalogo">Productos</a>
+      <a href="__BASE__/seguimiento/" data-route="/seguimiento">Seguimiento</a>
+      <a class="cart-link" href="__BASE__/carrito/" data-route="/carrito">Carrito <span id="cartBadge">0</span></a>
+    </div>
+  </nav>
+  <div class="campaign-countdown">
+    <span data-campaign-countdown-label>Campana activa</span>
+    <strong data-campaign-countdown>00d 00h 00m 00s</strong>
+    <a href="__BASE__/producto/" data-route="/producto">Personalizar ahora</a>
+  </div>
+</header>
