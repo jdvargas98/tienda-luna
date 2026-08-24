@@ -1840,7 +1840,7 @@ function resolveMediaUrl(url = "") {
   const value = String(url || "").trim();
   if (!value) return "";
   if (/^https?:\/\//i.test(value) || value.startsWith("data:") || value.startsWith("blob:")) return value;
-  if (value.startsWith("assets/tienda/")) {
+  if (value.startsWith("assets/tienda/") || value.startsWith("assets/productos/")) {
     return withBase(`/api/tienda_asset.php?path=${encodeURIComponent(value)}`);
   }
   if (value.startsWith("/")) return value;

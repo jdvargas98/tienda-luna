@@ -6,7 +6,19 @@ require_once __DIR__ . '/backend_path.php';
 $relativePath = trim((string)($_GET['path'] ?? ''));
 $relativePath = ltrim($relativePath, '/');
 
-if ($relativePath === '' || !str_starts_with($relativePath, 'assets/tienda/')) {
+$allowedPrefixes = [
+    'assets/tienda/',
+    'assets/productos/',
+];
+$allowedPrefix = null;
+foreach ($allowedPrefixes as $prefix) {
+    if (str_starts_with($relativePath, $prefix)) {
+        $allowedPrefix = $prefix;
+        break;
+    }
+}
+
+if ($relativePath === '' || $allowedPrefix === null) {
     http_response_code(400);
     header('Content-Type: application/json');
     echo json_encode([
@@ -17,7 +29,7 @@ if ($relativePath === '' || !str_starts_with($relativePath, 'assets/tienda/')) {
 }
 
 $assetPath = tienda_backend_path($relativePath);
-$assetRoot = tienda_backend_path('assets/tienda');
+$assetRoot = tienda_backend_path(rtrim($allowedPrefix, '/'));
 
 if ($assetPath === false || $assetRoot === false || !str_starts_with($assetPath, $assetRoot) || !is_file($assetPath)) {
     http_response_code(404);
