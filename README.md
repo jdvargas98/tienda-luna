@@ -14,6 +14,7 @@ tienda/
 ├── producto/index.html
 ├── carrito/index.html
 ├── checkout/index.html
+├── visita/index.html
 ├── seguimiento/index.html
 ├── assets/
 │   ├── css/
@@ -41,9 +42,11 @@ tienda/
 
 - `/tienda/`: entrada publica.
 - `/tienda/catalogo/`: catalogo/listado de productos.
-- `/tienda/producto/`: detalle, variantes y personalizador MVP.
+- `/tienda/producto/?slug={slug}`: detalle y personalizador del producto publicado indicado.
+- `/tienda/producto/?producto=rompecabezas-64`: enlace estable para la landing del rompecabezas; resuelve el producto publicado cuyo nombre o slug contiene `rompecabezas`.
 - `/tienda/carrito/`: carrito con resumen de personalizacion.
 - `/tienda/checkout/`: datos de cliente, empresa, envio y estructura de pago.
+- `/tienda/visita/`: solicitud de visita con fecha, hora y doble confirmacion.
 - `/tienda/seguimiento/`: consulta publica por codigo.
 - `/tienda/confirmacion/`: pantalla virtual de confirmacion servida por el fallback de `.htaccess`.
 
@@ -54,6 +57,7 @@ En local con Herd, si el host `tienda.test` apunta directamente a esta carpeta, 
 - `http://tienda.test/producto/`
 - `http://tienda.test/carrito/`
 - `http://tienda.test/checkout/`
+- `http://tienda.test/visita/`
 - `http://tienda.test/seguimiento/`
 
 ## Modulos

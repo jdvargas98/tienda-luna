@@ -1,10 +1,14 @@
 const STORAGE_KEY = "luna_creativa_tienda";
+const UPLOAD_SESSION_KEY = "luna_creativa_upload_session";
 
 const initialState = {
   currentProductSlug: "",
   selectedVariant: null,
   personalization: {
     photoUrl: "",
+    photoUploadId: 0,
+    photoUploadToken: "",
+    photoFieldCode: "",
     values: {},
   },
   cart: [],
@@ -17,15 +21,18 @@ export const state = loadState();
 export function saveState() {
   const serializableState = {
     ...state,
+    lastOrder: state.lastOrder ? { ...state.lastOrder, code: "" } : null,
     personalization: {
       ...state.personalization,
       photoUrl: state.personalization.photoUrl?.startsWith("blob:") ? "" : state.personalization.photoUrl,
+      photoUploadToken: "",
     },
     cart: state.cart.map((item) => ({
       ...item,
       personalization: {
         ...item.personalization,
         photoUrl: item.personalization.photoUrl?.startsWith("blob:") ? "" : item.personalization.photoUrl,
+        photoUploadToken: "",
       },
     })),
   };
@@ -35,6 +42,7 @@ export function saveState() {
 export function hydrateProductState(product) {
   if (!product) return;
 
+  const productChanged = state.currentProductSlug !== product.slug;
   const variants = product.variantes || [];
   const firstVariant = normalizeVariant(variants[0]);
   const selectedStillExists = variants.some((variant) => String(variant.id) === String(state.selectedVariant?.id));
@@ -63,7 +71,10 @@ export function hydrateProductState(product) {
   });
 
   state.personalization = {
-    photoUrl: state.personalization.photoUrl || "",
+    photoUrl: productChanged ? "" : state.personalization.photoUrl || "",
+    photoUploadId: productChanged ? 0 : Number(state.personalization.photoUploadId || 0),
+    photoUploadToken: productChanged ? "" : state.personalization.photoUploadToken || "",
+    photoFieldCode: productChanged ? "" : state.personalization.photoFieldCode || "",
     values: nextValues,
   };
 
@@ -86,10 +97,13 @@ export function updatePersonalizationValue(code, value) {
   saveState();
 }
 
-export function updatePhotoUrl(photoUrl) {
+export function updatePhotoUrl(photoUrl, upload = {}) {
   state.personalization = {
     ...state.personalization,
     photoUrl,
+    photoUploadId: Number(upload.uploadId || 0),
+    photoUploadToken: upload.uploadToken || "",
+    photoFieldCode: upload.fieldCode || "",
   };
   saveState();
 }
@@ -105,6 +119,9 @@ export function addConfiguredProductToCart(product) {
       variant: { ...variant },
       personalization: {
         photoUrl: state.personalization.photoUrl,
+        photoUploadId: Number(state.personalization.photoUploadId || 0),
+        photoUploadToken: state.personalization.photoUploadToken || "",
+        photoFieldCode: state.personalization.photoFieldCode || "",
         values: { ...state.personalization.values },
       },
       quantity: 1,
@@ -192,9 +209,18 @@ function loadState() {
       selectedVariant: storedState?.selectedVariant || null,
       personalization: {
         photoUrl: storedState?.personalization?.photoUrl || "",
+        photoUploadId: Number(storedState?.personalization?.photoUploadId || 0),
+        photoUploadToken: currentUploadToken(),
+        photoFieldCode: storedState?.personalization?.photoFieldCode || "",
         values: storedState?.personalization?.values || {},
       },
-      cart: storedState?.cart || [],
+      cart: (storedState?.cart || []).map((item) => ({
+        ...item,
+        personalization: {
+          ...(item.personalization || {}),
+          photoUploadToken: item.personalization?.photoUploadId ? currentUploadToken() : "",
+        },
+      })),
       checkout: storedState?.checkout || {},
       lastOrder: storedState?.lastOrder || null,
     };
@@ -208,10 +234,22 @@ function cloneInitialState() {
     ...initialState,
     personalization: {
       photoUrl: "",
+      photoUploadId: 0,
+      photoUploadToken: "",
+      photoFieldCode: "",
       values: {},
     },
     cart: [],
     checkout: {},
     lastOrder: null,
   };
+}
+
+function currentUploadToken() {
+  try {
+    const session = JSON.parse(sessionStorage.getItem(UPLOAD_SESSION_KEY) || "null");
+    return session?.upload_token || "";
+  } catch {
+    return "";
+  }
 }

@@ -4,9 +4,10 @@ import {
   fetchColombiaDepartments,
   fetchOrderTracking,
   fetchProductDetail,
+  requestVisit,
   uploadPersonalizationFile,
-} from "./data.js?v=20260512-hero-regalos";
-import { BASE_PATH, withBase } from "./config.js?v=20260512-hero-regalos";
+} from "./data.js?v=20260823-product-route";
+import { BASE_PATH, withBase } from "./config.js?v=20260823-product-route";
 import {
   addConfiguredProductToCart,
   cartQuantity,
@@ -20,8 +21,8 @@ import {
   updatePersonalizationValue,
   updatePhotoUrl,
   updateQuantity,
-} from "./cart.js?v=20260512-hero-regalos";
-import { loadShell, money, setActiveRoute, updateCartBadge } from "./ui.js?v=20260512-hero-regalos";
+} from "./cart.js?v=20260823-product-route";
+import { loadShell, money, setActiveRoute, updateCartBadge } from "./ui.js?v=20260823-product-route";
 
 const routes = {
   "/": renderHome,
@@ -31,26 +32,14 @@ const routes = {
   "/checkout": renderCheckout,
   "/confirmacion": renderConfirmation,
   "/seguimiento": renderTracking,
+  "/visita": renderVisit,
 };
 
 const app = document.querySelector("#app");
 const storefront = {
   catalog: null,
   product: null,
-};
-
-const campaignConfig = {
-  active: true,
-  kicker: "Mayo corporativo",
-  title: "Regalos personalizados para equipos",
-  offer: "Hasta 15% en pedidos empresariales seleccionados",
-  countdownLabel: "Cierre de produccion semanal",
-  endsAt: "2026-05-18T23:59:59-05:00",
-  heroTag: "Campana de mayo",
-  headline: "Regalos que tu equipo si va a recordar.",
-  copy: "Rompecabezas, mugs y detalles personalizados listos para sorprender clientes, colaboradores y aliados.",
-  cta: "Personalizar mi regalo",
-  secondaryCta: "Ver catalogo",
+  productSlug: "",
 };
 
 document.addEventListener("click", (event) => {
@@ -69,7 +58,7 @@ document.addEventListener("click", (event) => {
 window.addEventListener("popstate", () => void renderRoute());
 
 loadShell().then(() => {
-  initCampaignChrome();
+  bindSiteSearch();
   void renderRoute();
 });
 
@@ -110,27 +99,6 @@ function closeMenu() {
   navToggle?.setAttribute("aria-expanded", "false");
 }
 
-function initCampaignChrome() {
-  document.querySelector("[data-campaign-kicker]").textContent = campaignConfig.kicker;
-  document.querySelector("[data-campaign-title]").textContent = campaignConfig.title;
-  document.querySelector("[data-campaign-offer]").textContent = campaignConfig.offer;
-  document.querySelector("[data-campaign-countdown-label]").textContent = campaignConfig.countdownLabel;
-  updateCampaignCountdown();
-  setInterval(updateCampaignCountdown, 1000);
-  bindSiteSearch();
-}
-
-function updateCampaignCountdown() {
-  const target = document.querySelector("[data-campaign-countdown]");
-  if (!target) return;
-  const remaining = Math.max(0, new Date(campaignConfig.endsAt).getTime() - Date.now());
-  const days = Math.floor(remaining / 86400000);
-  const hours = Math.floor((remaining % 86400000) / 3600000);
-  const minutes = Math.floor((remaining % 3600000) / 60000);
-  const seconds = Math.floor((remaining % 60000) / 1000);
-  target.textContent = `${String(days).padStart(2, "0")}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
-}
-
 function bindSiteSearch() {
   const form = document.querySelector("#siteSearch");
   const input = document.querySelector("#siteSearchInput");
@@ -169,160 +137,483 @@ function bindSiteSearch() {
 async function renderHome() {
   const catalog = await ensureCatalog();
   app.innerHTML = `
-    <section class="home-hero home-hero--regalos" aria-label="Bienvenida Luna Creativa">
+    <section class="home-hero" aria-labelledby="home-title">
       <div class="home-hero__inner">
         <div class="home-hero__content">
-          <p class="home-eyebrow">${escapeHtml(campaignConfig.heroTag)}</p>
-          <h1>${escapeHtml(campaignConfig.headline)}</h1>
-          <p class="home-hero__desc">${escapeHtml(campaignConfig.copy)}</p>
+          <p class="home-eyebrow">Publicidad · impresión · marca</p>
+          <h1 id="home-title">Publicidad que hace <em>visible</em> tu negocio.</h1>
+          <p class="home-hero__desc">Diseñamos y producimos avisos 2D y 3D, impresión, corte láser, branding y personalizados para que tu marca se vea profesional en cada punto de contacto.</p>
           <div class="home-hero__actions">
-            <a class="btn primary" href="${withBase("/producto/")}" data-route="/producto">${escapeHtml(campaignConfig.cta)}</a>
-            <a class="btn btn--outline-white" href="${withBase("/catalogo/")}" data-route="/catalogo">${escapeHtml(campaignConfig.secondaryCta)}</a>
+            <a class="btn primary" href="mailto:info@lunacreativa.com.co?subject=Quiero%20cotizar%20un%20proyecto%20de%20publicidad">Solicitar asesoría</a>
+            <a class="btn btn--outline-white" href="${withBase("/catalogo/")}" data-route="/catalogo">Explorar catálogo</a>
           </div>
           <div class="home-trust-row">
             <div class="home-trust-stat">
-              <strong>+500</strong>
-              <span>pedidos entregados</span>
+              <strong>Asesoría</strong>
+              <span>para aterrizar tu idea</span>
             </div>
             <div class="home-trust-sep" aria-hidden="true"></div>
             <div class="home-trust-stat">
-              <strong>4.9 ★</strong>
-              <span>calificacion promedio</span>
+              <strong>Diseño</strong>
+              <span>alineado con tu marca</span>
             </div>
             <div class="home-trust-sep" aria-hidden="true"></div>
             <div class="home-trust-stat">
-              <strong>48 h</strong>
-              <span>respuesta garantizada</span>
+              <strong>Producción</strong>
+              <span>lista para implementar</span>
             </div>
           </div>
+        </div>
+        <div class="home-hero__showcase" aria-label="Servicios de publicidad">
+          <div class="home-showcase__header">
+            <span>Soluciones integrales</span>
+            <strong>Tu marca, bien presentada</strong>
+          </div>
+          <div class="home-showcase__grid">
+            <span>Avisos 2D y 3D</span>
+            <span>Impresión</span>
+            <span>Corte láser</span>
+            <span>Branding</span>
+            <span>Personalizados</span>
+            <span>Eventos</span>
+          </div>
+          <p>De la idea a la producción y entrega.</p>
         </div>
       </div>
     </section>
 
-    ${categoryBar()}
-
-    <section class="section campaign-banners" aria-label="Lanzamientos y temporadas">
-      <a class="campaign-tile campaign-tile--primary" href="${withBase("/producto/")}" data-route="/producto">
-        <span>Producto estrella</span>
-        <strong>Rompecabezas personalizado en caja MDF</strong>
-        <small>Foto, frase grabada y empaque listo para regalar.</small>
-      </a>
-      <a class="campaign-tile campaign-tile--secondary" href="${withBase("/catalogo/")}" data-route="/catalogo">
-        <span>Compra empresarial</span>
-        <strong>Pedidos para equipos y clientes</strong>
-        <small>Activa regalos por temporada con seguimiento publico.</small>
-      </a>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
+    <section class="section home-services" aria-labelledby="services-title">
+      <div class="home-section-heading">
         <div>
-          <p class="section-kicker">Seleccion destacada</p>
-          <h2>Los mas pedidos</h2>
-          <p>Alta calidad, presentacion impecable y entrega a tiempo.</p>
+          <p class="section-kicker">Lo que hacemos</p>
+          <h2 id="services-title">Soluciones para que tu marca se vea.</h2>
         </div>
-        <a class="view-all" href="${withBase("/catalogo/")}" data-route="/catalogo">Ver todos →</a>
+        <p>Desde una pieza puntual hasta la imagen completa de un espacio, construimos cada proyecto según lo que necesitas comunicar.</p>
       </div>
-      <div class="catalog-grid" aria-label="Productos destacados">
-        ${catalog.productos.map(productCard).join("")}
+      <div class="home-services__grid">
+        <article class="home-service-card">
+          <span class="home-service-card__mark">3D</span>
+          <h3>Avisos 2D y 3D</h3>
+          <p>Letreros y elementos de fachada pensados para identificar y destacar tu negocio.</p>
+        </article>
+        <article class="home-service-card">
+          <span class="home-service-card__mark">CL</span>
+          <h3>Corte láser</h3>
+          <p>Piezas precisas para señalización, decoración, exhibición y proyectos personalizados.</p>
+        </article>
+        <article class="home-service-card">
+          <span class="home-service-card__mark">IMP</span>
+          <h3>Impresión</h3>
+          <p>Material gráfico para comunicar promociones, información y presencia de marca.</p>
+        </article>
+        <article class="home-service-card">
+          <span class="home-service-card__mark">BR</span>
+          <h3>Branding</h3>
+          <p>Aplicaciones visuales coherentes para presentar tu marca de forma profesional.</p>
+        </article>
+        <article class="home-service-card">
+          <span class="home-service-card__mark">P</span>
+          <h3>Personalizados</h3>
+          <p>Productos y detalles producidos a la medida de tu marca, ocasión o campaña.</p>
+        </article>
+        <article class="home-service-card">
+          <span class="home-service-card__mark">EV</span>
+          <h3>Publicidad para eventos</h3>
+          <p>Piezas visuales que ayudan a identificar, ambientar y comunicar tu evento.</p>
+        </article>
       </div>
     </section>
 
-    <div class="home-how-wrap">
-      <section class="section home-how">
-        <div class="home-how__head">
-          <p class="section-kicker">Proceso</p>
-          <h2>Personalizar es sencillo</h2>
-          <p>Tres pasos para tener el regalo perfecto listo para entregar.</p>
+    <div class="home-needs-wrap">
+      <section class="section home-needs" aria-labelledby="needs-title">
+        <div class="home-section-heading home-section-heading--light">
+          <div>
+            <p class="section-kicker kicker--light">Soluciones por necesidad</p>
+            <h2 id="needs-title">¿Qué quieres lograr?</h2>
+          </div>
+          <p>Cuéntanos el objetivo. Nosotros te ayudamos a definir las piezas, materiales y producción.</p>
         </div>
-        <div class="home-steps">
-          <div class="home-step">
-            <div class="home-step__num">01</div>
-            <div class="home-step__icon">${giftIcon()}</div>
-            <h3>Elige el producto</h3>
-            <p>Navega el catalogo y selecciona el regalo ideal para tu equipo o cliente.</p>
-          </div>
-          <div class="home-step__arrow" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-          </div>
-          <div class="home-step">
-            <div class="home-step__num">02</div>
-            <div class="home-step__icon">${penIcon()}</div>
-            <h3>Personaliza cada detalle</h3>
-            <p>Sube tu foto, escribe el texto de grabado y elige la ocasion. Todo a tu medida.</p>
-          </div>
-          <div class="home-step__arrow" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-          </div>
-          <div class="home-step">
-            <div class="home-step__num">03</div>
-            <div class="home-step__icon">${laserIcon()}</div>
-            <h3>Recibe y sorprende</h3>
-            <p>Fabricamos y enviamos con empaque listo para regalar. Sin complicaciones.</p>
-          </div>
+        <div class="home-needs__grid">
+          <article><span>01</span><h3>Abrir un negocio</h3><p>Identidad visible, aviso y piezas esenciales para empezar con una imagen clara.</p></article>
+          <article><span>02</span><h3>Renovar tu imagen</h3><p>Actualización de fachada, señalización y aplicaciones para verte más vigente.</p></article>
+          <article><span>03</span><h3>Preparar un evento</h3><p>Elementos gráficos y personalizados para una experiencia visual consistente.</p></article>
+          <article><span>04</span><h3>Lanzar una campaña</h3><p>Piezas impresas y visuales alineadas con una promoción o temporada comercial.</p></article>
         </div>
       </section>
     </div>
 
-    <section class="section home-testimonials">
-      <div class="home-testimonials__head">
-        <p class="section-kicker">Testimonios</p>
-        <h2>Lo que dicen quienes nos eligen</h2>
+    <section class="section home-portfolio" aria-labelledby="portfolio-title">
+      <div class="home-section-heading">
+        <div>
+          <p class="section-kicker">Portafolio</p>
+          <h2 id="portfolio-title">Proyectos que podemos desarrollar.</h2>
+        </div>
+        <p>Estas composiciones son muestras conceptuales. Las sustituiremos progresivamente por fotografías de trabajos reales autorizados.</p>
       </div>
-      <div class="home-reviews">
-        <blockquote class="home-review">
-          <div class="review-stars">★★★★★</div>
-          <p>"El rompecabezas fue el regalo mas especial que hemos entregado en anos. Cada colaborador quedo genuinamente sorprendido con el detalle."</p>
-          <footer>
-            <div class="reviewer-avatar" aria-hidden="true">MF</div>
-            <div>
-              <strong>Maria Fernanda Lopez</strong>
-              <span>Talento Humano · Nova S.A.S</span>
-            </div>
-          </footer>
-        </blockquote>
-        <blockquote class="home-review">
-          <div class="review-stars">★★★★★</div>
-          <p>"Pedimos kits de bienvenida para 40 colaboradores. La calidad y el grabado laser superaron nuestras expectativas completamente."</p>
-          <footer>
-            <div class="reviewer-avatar" aria-hidden="true">CA</div>
-            <div>
-              <strong>Carlos Andres Mejia</strong>
-              <span>Gerente Comercial · Andina SAS</span>
-            </div>
-          </footer>
-        </blockquote>
-        <blockquote class="home-review">
-          <div class="review-stars">★★★★★</div>
-          <p>"Los mugs con nuestra marca llegaron a tiempo y perfectos para el evento de cierre de ano. El servicio fue excelente de principio a fin."</p>
-          <footer>
-            <div class="reviewer-avatar" aria-hidden="true">LP</div>
-            <div>
-              <strong>Laura Pinzon</strong>
-              <span>Directora de Marca · Grupo Innova</span>
-            </div>
-          </footer>
-        </blockquote>
+      <div class="home-portfolio__notice">Muestras conceptuales · No corresponden a clientes ni proyectos entregados</div>
+      <div class="home-portfolio__grid">
+        <article class="home-project-card">
+          <div class="home-project-art home-project-art--facade" role="img" aria-label="Representación conceptual de un aviso tridimensional">
+            <span class="project-building"></span><strong>LUNA</strong>
+          </div>
+          <div class="home-project-copy"><span>Avisos 2D y 3D</span><h3>Fachada con presencia</h3><p>Identificación exterior clara y visible.</p></div>
+        </article>
+        <article class="home-project-card">
+          <div class="home-project-art home-project-art--laser" role="img" aria-label="Representación conceptual de señalización cortada en láser">
+            <span>ENTRADA</span><i></i><span>RECEPCIÓN</span>
+          </div>
+          <div class="home-project-copy"><span>Corte láser</span><h3>Señalización interior</h3><p>Piezas precisas para orientar y ambientar.</p></div>
+        </article>
+        <article class="home-project-card">
+          <div class="home-project-art home-project-art--print" role="img" aria-label="Representación conceptual de piezas impresas para campaña">
+            <i></i><i></i><i></i>
+          </div>
+          <div class="home-project-copy"><span>Impresión</span><h3>Campaña comercial</h3><p>Una misma idea aplicada en diferentes formatos.</p></div>
+        </article>
+        <article class="home-project-card">
+          <div class="home-project-art home-project-art--event" role="img" aria-label="Representación conceptual de elementos personalizados para eventos">
+            <span>MARCA</span><i></i><b>EVENTO</b>
+          </div>
+          <div class="home-project-copy"><span>Eventos y personalizados</span><h3>Experiencia de marca</h3><p>Elementos coordinados para una presentación memorable.</p></div>
+        </article>
       </div>
     </section>
 
+    <div class="home-process-wrap">
+      <section class="section home-process" aria-labelledby="process-title">
+        <div class="home-section-heading">
+          <div>
+            <p class="section-kicker">Cómo trabajamos</p>
+            <h2 id="process-title">De la idea al resultado.</h2>
+          </div>
+          <p>Un proceso claro para entender, diseñar y producir la solución adecuada.</p>
+        </div>
+        <ol class="home-process__steps">
+          <li><span>01</span><div><h3>Asesoría</h3><p>Entendemos tu necesidad, espacio, cantidad y objetivo.</p></div></li>
+          <li><span>02</span><div><h3>Diseño</h3><p>Definimos la propuesta visual, medidas y acabados.</p></div></li>
+          <li><span>03</span><div><h3>Producción</h3><p>Fabricamos las piezas aprobadas para tu proyecto.</p></div></li>
+          <li><span>04</span><div><h3>Instalación o entrega</h3><p>Coordinamos la etapa final según el producto y destino.</p></div></li>
+        </ol>
+      </section>
+    </div>
+
+    <section class="section home-coverage" aria-labelledby="coverage-title">
+      <div class="home-coverage__panel">
+        <div>
+          <p class="section-kicker kicker--light">Atención regional</p>
+          <h2 id="coverage-title">Cuéntanos dónde está tu proyecto.</h2>
+          <p>Confirmamos cobertura, visita técnica, forma de entrega y tiempos antes de iniciar la producción.</p>
+        </div>
+        <div class="home-coverage__details" aria-label="Condiciones de cobertura">
+          <span>Visita técnica por confirmar</span>
+          <span>Envíos según destino</span>
+          <span>Tiempos definidos en la cotización</span>
+        </div>
+        <a class="btn btn--cta-primary" href="mailto:info@lunacreativa.com.co?subject=Quiero%20consultar%20cobertura%20para%20mi%20proyecto">Consultar cobertura</a>
+      </div>
+    </section>
+
+    <div class="home-catalog-wrap">
+      ${categoryBar()}
+      <section class="section home-catalog">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Catálogo</p>
+            <h2>Productos para complementar tu proyecto.</h2>
+            <p>Explora los productos disponibles y sus opciones de personalización.</p>
+          </div>
+          <a class="view-all" href="${withBase("/catalogo/")}" data-route="/catalogo">Ver catálogo →</a>
+        </div>
+        <div class="catalog-grid" aria-label="Productos destacados">
+          ${catalog.productos.map(productCard).join("")}
+        </div>
+      </section>
+    </div>
+
     <div class="home-cta-outer">
       <div class="home-cta-banner">
-        <div class="home-cta-banner__blobs" aria-hidden="true">
-          <span></span><span></span>
-        </div>
+        <div class="home-cta-banner__blobs" aria-hidden="true"><span></span><span></span></div>
         <div class="home-cta-banner__content">
-          <p class="section-kicker kicker--light">Tu proximo regalo</p>
-          <h2>Listo para crear algo que se recuerde?</h2>
-          <p>Mas de 500 empresas confian en Luna Creativa para sus regalos corporativos. Cotiza hoy sin compromiso.</p>
+          <p class="section-kicker kicker--light">Hablemos de tu idea</p>
+          <h2>¿Tienes un proyecto en mente?</h2>
+          <p>Descríbenos qué necesitas y te ayudaremos a definir el siguiente paso.</p>
           <div class="home-cta-banner__actions">
-            <a class="btn btn--cta-primary" href="${withBase("/catalogo/")}" data-route="/catalogo">Ver catalogo completo</a>
-            <a class="btn btn--cta-ghost" href="${withBase("/seguimiento/")}" data-route="/seguimiento">Rastrear mi pedido</a>
+            <a class="btn btn--cta-primary" href="mailto:info@lunacreativa.com.co?subject=Quiero%20cotizar%20un%20proyecto">Solicitar asesoría</a>
+            <a class="btn btn--cta-ghost" href="${withBase("/catalogo/")}" data-route="/catalogo">Explorar catálogo</a>
           </div>
         </div>
       </div>
     </div>
   `;
+  initHeroMotion();
+}
+
+function initHeroMotion() {
+  const hero = document.querySelector(".home-hero");
+  const showcase = hero?.querySelector(".home-hero__showcase");
+  if (!hero || !showcase || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  let frame = 0;
+
+  hero.addEventListener("pointermove", (event) => {
+    if (event.pointerType === "touch") return;
+    const bounds = hero.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
+    const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
+
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      showcase.style.setProperty("--hero-shift-x", `${(x * 5).toFixed(2)}px`);
+      showcase.style.setProperty("--hero-shift-y", `${(y * 4).toFixed(2)}px`);
+      showcase.style.setProperty("--hero-tilt", `${(x * 0.35).toFixed(2)}deg`);
+    });
+  });
+
+  hero.addEventListener("pointerleave", () => {
+    cancelAnimationFrame(frame);
+    showcase.style.removeProperty("--hero-shift-x");
+    showcase.style.removeProperty("--hero-shift-y");
+    showcase.style.removeProperty("--hero-tilt");
+  });
+}
+
+async function renderVisit() {
+  const today = new Date();
+  const minimumDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  const maximumDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 90);
+
+  app.innerHTML = `
+    <section class="visit-hero" aria-labelledby="visit-title">
+      <div class="visit-hero__inner">
+        <p class="section-kicker">Visita de cotización</p>
+        <h1 id="visit-title">Agenda una visita para revisar tu proyecto.</h1>
+        <p>Propón una fecha y hora para que el equipo de Ventas pueda revisar el espacio, las medidas y las necesidades de tu negocio.</p>
+      </div>
+    </section>
+
+    <section class="section visit-layout">
+      <div class="visit-form-card">
+        <div class="visit-form-card__head">
+          <p class="section-kicker">Tus datos</p>
+          <h2>Solicitar fecha de visita</h2>
+          <p>Los campos marcados con * son obligatorios.</p>
+        </div>
+        <form class="visit-form" id="visitForm">
+          <label>
+            <span>Nombre completo *</span>
+            <input name="name" type="text" autocomplete="name" maxlength="120" required>
+          </label>
+          <label>
+            <span>Empresa o marca</span>
+            <input name="company" type="text" autocomplete="organization" maxlength="140">
+          </label>
+          <label>
+            <span>Correo electrónico *</span>
+            <input name="email" type="email" autocomplete="email" maxlength="190" required>
+          </label>
+          <label>
+            <span>Celular o WhatsApp *</span>
+            <input name="phone" type="tel" autocomplete="tel" inputmode="tel" minlength="7" maxlength="30" required>
+          </label>
+          <label>
+            <span>Ciudad *</span>
+            <input name="city" type="text" autocomplete="address-level2" maxlength="100" value="Neiva" required>
+          </label>
+          <label>
+            <span>Dirección de la visita *</span>
+            <input name="address" type="text" autocomplete="street-address" maxlength="220" required>
+          </label>
+          <label>
+            <span>Fecha propuesta *</span>
+            <input name="date" type="date" min="${formatInputDate(minimumDate)}" max="${formatInputDate(maximumDate)}" required>
+            <small>Disponible para solicitar desde mañana y hasta 90 días.</small>
+          </label>
+          <label>
+            <span>Hora propuesta *</span>
+            <select name="time" required>
+              <option value="">Selecciona un horario</option>
+              ${visitTimeOptions()}
+            </select>
+            <small>Horarios disponibles para solicitar: 7:00 a. m. a 7:00 p. m.</small>
+          </label>
+          <label class="visit-form__wide">
+            <span>Servicio de interés *</span>
+            <select name="service" required>
+              <option value="">Selecciona una opción</option>
+              <option value="Avisos 2D y 3D">Avisos 2D y 3D</option>
+              <option value="Corte láser">Corte láser</option>
+              <option value="Impresión">Impresión</option>
+              <option value="Branding">Branding</option>
+              <option value="Personalizados">Personalizados</option>
+              <option value="Publicidad para eventos">Publicidad para eventos</option>
+              <option value="Otro proyecto">Otro proyecto</option>
+            </select>
+          </label>
+          <label class="visit-form__wide">
+            <span>¿Qué necesitas revisar durante la visita? *</span>
+            <textarea name="message" rows="5" minlength="10" maxlength="2000" placeholder="Describe el espacio, medidas aproximadas, tipo de aviso o necesidad principal." required></textarea>
+          </label>
+          <label class="visit-form__trap" hidden>
+            <span>Sitio web</span>
+            <input name="website" type="text" tabindex="-1" autocomplete="off">
+          </label>
+          <div class="visit-conditions visit-form__wide">
+            <div class="visit-conditions__warning" role="note">
+              <span class="visit-conditions__icon" aria-hidden="true">!</span>
+              <p><strong>Importante:</strong> la fecha y hora seleccionadas son una solicitud. Nuestro equipo de Ventas se pondrá en contacto contigo para confirmar la disponibilidad y dejar la visita agendada.</p>
+            </div>
+            <label>
+              <input name="change_acknowledged" type="checkbox" value="yes" required>
+              <span>Entiendo que cualquier cambio de fecha u hora debe solicitarse y confirmarse nuevamente.</span>
+            </label>
+            <label>
+              <input name="privacy_accepted" type="checkbox" value="yes" required>
+              <span>Autorizo el tratamiento de mis datos para gestionar esta solicitud según la <a href="https://lunacreativa.com.co/legal/politica-privacidad.html" target="_blank" rel="noreferrer">Política de Privacidad</a>.</span>
+            </label>
+          </div>
+          <div class="visit-form__footer visit-form__wide">
+            <p class="visit-form__status" id="visitStatus" role="status" aria-live="polite" hidden></p>
+            <button class="btn primary" type="submit">Revisar y confirmar</button>
+          </div>
+        </form>
+      </div>
+
+      <aside class="visit-aside">
+        <p class="section-kicker">Cómo funciona</p>
+        <ol>
+          <li><span>1</span><div><strong>Envías tu solicitud</strong><p>Seleccionas una fecha y hora preferidas.</p></div></li>
+          <li><span>2</span><div><strong>Ventas revisa la agenda</strong><p>El equipo valida disponibilidad y cobertura.</p></div></li>
+          <li><span>3</span><div><strong>Recibes confirmación</strong><p>La visita queda agendada solamente después de la respuesta de Ventas.</p></div></li>
+        </ol>
+        <div class="visit-aside__contact">
+          <span>También puedes escribir a</span>
+          <a href="mailto:ventas@lunacreativa.com.co">ventas@lunacreativa.com.co</a>
+        </div>
+      </aside>
+    </section>
+
+    <dialog class="visit-confirm" id="visitConfirm" aria-labelledby="visit-confirm-title">
+      <div class="visit-confirm__content">
+        <p class="section-kicker">Segunda confirmación</p>
+        <h2 id="visit-confirm-title">Revisa tu solicitud</h2>
+        <dl>
+          <div><dt>Fecha y hora</dt><dd id="visitConfirmDate"></dd></div>
+          <div><dt>Dirección</dt><dd id="visitConfirmAddress"></dd></div>
+          <div><dt>Servicio</dt><dd id="visitConfirmService"></dd></div>
+        </dl>
+        <div class="visit-confirm__warning">
+          Este horario está pendiente de confirmación. Nuestro equipo de Ventas se pondrá en contacto contigo para confirmar la disponibilidad.
+        </div>
+        <div class="visit-confirm__actions">
+          <button class="btn ghost" id="visitEdit" type="button">Volver y editar</button>
+          <button class="btn primary" id="visitSend" type="button">Confirmar y enviar</button>
+        </div>
+      </div>
+    </dialog>
+  `;
+
+  bindVisitForm();
+}
+
+function formatInputDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function visitTimeOptions() {
+  const options = [];
+  for (let minutes = 7 * 60; minutes <= 19 * 60; minutes += 30) {
+    const hour = Math.floor(minutes / 60);
+    const minute = minutes % 60;
+    const value = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    const period = hour >= 12 ? "p. m." : "a. m.";
+    const displayHour = hour % 12 || 12;
+    options.push(`<option value="${value}">${displayHour}:${String(minute).padStart(2, "0")} ${period}</option>`);
+  }
+  return options.join("");
+}
+
+function bindVisitForm() {
+  const form = document.querySelector("#visitForm");
+  const dialog = document.querySelector("#visitConfirm");
+  const status = document.querySelector("#visitStatus");
+  const sendButton = document.querySelector("#visitSend");
+  const editButton = document.querySelector("#visitEdit");
+  if (!form || !dialog || !status || !sendButton || !editButton) return;
+
+  let pendingPayload = null;
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+
+    const data = new FormData(form);
+    pendingPayload = {
+      name: data.get("name"),
+      company: data.get("company"),
+      email: data.get("email"),
+      phone: data.get("phone"),
+      city: data.get("city"),
+      address: data.get("address"),
+      date: data.get("date"),
+      time: data.get("time"),
+      service: data.get("service"),
+      message: data.get("message"),
+      website: data.get("website"),
+      privacy_accepted: data.get("privacy_accepted") === "yes",
+      change_acknowledged: data.get("change_acknowledged") === "yes",
+    };
+
+    const requestedDate = new Date(`${pendingPayload.date}T${pendingPayload.time}:00`);
+    document.querySelector("#visitConfirmDate").textContent = new Intl.DateTimeFormat("es-CO", {
+      dateStyle: "long",
+      timeStyle: "short",
+    }).format(requestedDate);
+    document.querySelector("#visitConfirmAddress").textContent = `${pendingPayload.address}, ${pendingPayload.city}`;
+    document.querySelector("#visitConfirmService").textContent = pendingPayload.service;
+    status.hidden = true;
+
+    if (typeof dialog.showModal === "function") {
+      dialog.showModal();
+    } else {
+      dialog.setAttribute("open", "");
+    }
+  });
+
+  editButton.addEventListener("click", () => {
+    if (typeof dialog.close === "function") dialog.close();
+    else dialog.removeAttribute("open");
+  });
+
+  sendButton.addEventListener("click", async () => {
+    if (!pendingPayload) return;
+    sendButton.disabled = true;
+    sendButton.textContent = "Enviando...";
+
+    try {
+      const result = await requestVisit(pendingPayload);
+      if (typeof dialog.close === "function") dialog.close();
+      else dialog.removeAttribute("open");
+      form.reset();
+      form.elements.city.value = "Neiva";
+      status.textContent = result.message;
+      status.className = "visit-form__status visit-form__status--success";
+      status.hidden = false;
+      status.scrollIntoView({ behavior: "smooth", block: "center" });
+      pendingPayload = null;
+    } catch (error) {
+      if (typeof dialog.close === "function") dialog.close();
+      else dialog.removeAttribute("open");
+      status.textContent = error.message || "No pudimos enviar la solicitud.";
+      status.className = "visit-form__status visit-form__status--error";
+      status.hidden = false;
+    } finally {
+      sendButton.disabled = false;
+      sendButton.textContent = "Confirmar y enviar";
+    }
+  });
 }
 
 async function renderCatalog() {
@@ -349,9 +640,10 @@ function productCard(product) {
   const compareMarkup = compare > price ? `<del>${money(compare)}</del>` : "";
   const img = productImage(product);
   const tag = product.destacado ? "DESTACADO" : product.permite_personalizacion ? "PERSONALIZABLE" : "PUBLICADO";
+  const detailPath = productDetailPath(product);
   return `
     <article class="product-card">
-      <a class="product-card__image" href="${withBase("/producto/")}" data-route="/producto">
+      <a class="product-card__image" href="${withBase(detailPath)}" data-route="/producto">
         <div class="tag-row">
           <span class="pill">${tag}</span>
           <span class="favorite" aria-hidden="true">♡</span>
@@ -363,7 +655,7 @@ function productCard(product) {
         <div class="rating"><span class="stars">★★★★★</span> Catalogo conectado</div>
         <p class="price">Desde ${compareMarkup} <span class="sale-price">${money(price)}</span></p>
         <p class="muted">${product.descripcion_corta || product.categoria?.nombre || "Producto publicado"}</p>
-        <a class="btn primary full-width product-cta" href="${withBase("/producto/")}" data-route="/producto">Ver detalle</a>
+        <a class="btn primary full-width product-cta" href="${withBase(detailPath)}" data-route="/producto">${product.permite_personalizacion ? "Personalizar" : "Ver detalle"}</a>
       </div>
     </article>
   `;
@@ -723,9 +1015,13 @@ function bindProductEvents(product) {
     uploadStatus.classList.remove("upload-status--error", "upload-status--success");
 
     try {
-      const payload = await uploadPersonalizationFile(file, event.target.dataset.fieldCode);
+      const payload = await uploadPersonalizationFile(file, event.target.dataset.fieldCode, product.id);
       const uploadedUrl = payload.url || payload.archivo?.url || "";
-      updatePhotoUrl(uploadedUrl);
+      updatePhotoUrl(uploadedUrl, {
+        uploadId: Number(payload.upload_id || payload.archivo?.upload_id || 0),
+        uploadToken: payload.upload_token || "",
+        fieldCode: event.target.dataset.fieldCode || "",
+      });
       previewPhoto.src = resolveMediaUrl(uploadedUrl);
       uploadStatus.textContent = "Imagen cargada correctamente.";
       uploadStatus.classList.add("upload-status--success");
@@ -847,8 +1143,8 @@ function emptyCartMarkup() {
   return `
     <div class="empty-state">
       <h3>Tu carrito esta listo para empezar.</h3>
-      <p>Personaliza el rompecabezas MDF y vuelve aqui para revisar el resumen.</p>
-      <a class="btn secondary" href="${withBase("/producto/")}" data-route="/producto">Personalizar producto</a>
+      <p>Explora el catálogo, elige un producto y prepara su personalización.</p>
+      <a class="btn secondary" href="${withBase("/catalogo/")}" data-route="/catalogo">Explorar productos</a>
     </div>
   `;
 }
@@ -1118,6 +1414,7 @@ function wompiIcon() {
 
 function renderConfirmation() {
   const code = state.lastOrder?.code || "";
+  if (code) sessionStorage.setItem("luna_creativa_tracking_pending", code);
   app.innerHTML = `
     <section class="confirmation">
       <div class="panel">
@@ -1126,7 +1423,7 @@ function renderConfirmation() {
         <p>Te enviaremos el codigo por correo para consultar el avance cuando quieras.</p>
         ${code ? `<div class="order-code">${escapeHtml(code)}</div>` : ""}
         <div class="footer-actions">
-          <a class="btn primary" href="${withBase(code ? `/seguimiento/?codigo=${encodeURIComponent(code)}` : "/seguimiento/")}" data-route="/seguimiento">Consultar seguimiento</a>
+          <a class="btn primary" href="${withBase("/seguimiento/")}" data-route="/seguimiento">Consultar seguimiento</a>
           <a class="btn secondary" href="${withBase("/catalogo/")}" data-route="/catalogo">Volver al catalogo</a>
         </div>
       </div>
@@ -1136,13 +1433,17 @@ function renderConfirmation() {
 
 async function renderTracking() {
   const params = new URLSearchParams(window.location.search);
-  const initialCode = params.get("codigo") || "";
+  const initialCode = params.get("codigo") || sessionStorage.getItem("luna_creativa_tracking_pending") || "";
+  sessionStorage.removeItem("luna_creativa_tracking_pending");
+  if (params.has("codigo")) {
+    window.history.replaceState({}, "", withBase("/seguimiento/"));
+  }
   app.innerHTML = `
     <div class="trk-hero">
       <div class="trk-hero__inner">
         <p class="trk-hero__label">Ingresa tu codigo de seguimiento</p>
         <form class="trk-search" id="trackingForm">
-          <input id="trackingCode" class="trk-search__input" value="${initialCode}" placeholder="Codigo recibido por correo" required>
+          <input id="trackingCode" class="trk-search__input" value="${escapeHtml(initialCode)}" placeholder="Codigo recibido por correo" required>
           <button class="trk-search__btn" type="submit">Rastrear Pedido</button>
         </form>
       </div>
@@ -1162,7 +1463,7 @@ async function renderTracking() {
     }
 
     trackingResult.innerHTML = trackingLoadingMarkup();
-    window.history.replaceState({}, "", withBase(`/seguimiento/?codigo=${encodeURIComponent(cleanCode)}`));
+    window.history.replaceState({}, "", withBase("/seguimiento/"));
 
     try {
       const payload = await fetchOrderTracking(cleanCode);
@@ -1413,13 +1714,59 @@ async function ensureCatalog() {
 }
 
 async function ensurePrimaryProduct() {
-  if (storefront.product) return storefront.product;
   const catalog = await ensureCatalog();
-  const slug = catalog.productos?.[0]?.slug;
-  if (!slug) throw new Error("No hay productos publicados en el catalogo");
+  const products = catalog.productos || [];
+  const requestedProduct = requestedProductSlug();
+  const slug = resolveRequestedProductSlug(products, requestedProduct);
+
+  if (!slug) {
+    if (catalog.setup_required) {
+      throw new Error("El catálogo todavía no está configurado. Publica el rompecabezas en Tienda para habilitar este enlace.");
+    }
+    if (requestedProduct) {
+      throw new Error("El rompecabezas solicitado todavía no está publicado en la tienda.");
+    }
+    throw new Error("No hay productos publicados en el catálogo.");
+  }
+
+  if (storefront.product && storefront.productSlug === slug) return storefront.product;
   const detail = await fetchProductDetail(slug);
   storefront.product = detail.producto;
+  storefront.productSlug = slug;
   return storefront.product;
+}
+
+function requestedProductSlug() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get("slug") || params.get("producto") || "").trim().toLowerCase();
+}
+
+function resolveRequestedProductSlug(products, requestedSlug) {
+  if (!requestedSlug) return products[0]?.slug || "";
+
+  const exact = products.find((product) => String(product.slug).toLowerCase() === requestedSlug);
+  if (exact) return exact.slug;
+
+  // La landing comercial ya identifica el producto como `rompecabezas-64`.
+  // Este alias permite conservar ese enlace aunque el slug administrativo sea
+  // `rompecabezas-personalizado` u otro equivalente publicado en el catálogo.
+  if (requestedSlug === "rompecabezas-64") {
+    const puzzle = products.find((product) =>
+      [product.slug, product.nombre]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes("rompecabezas")
+    );
+    return puzzle?.slug || "";
+  }
+
+  return "";
+}
+
+function productDetailPath(product) {
+  const slug = String(product?.slug || "").trim();
+  return slug ? `/producto/?slug=${encodeURIComponent(slug)}` : "/producto/";
 }
 
 function productImage(product) {
@@ -1461,8 +1808,9 @@ function filterProductsBySearch(products, query) {
 
 function searchSuggestionMarkup(product) {
   const image = productImage(product);
+  const detailPath = productDetailPath(product);
   return `
-    <a class="site-search__item" href="${withBase("/producto/")}" data-route="/producto">
+    <a class="site-search__item" href="${withBase(detailPath)}" data-route="/producto">
       ${image ? `<img src="${image}" alt="${escapeHtml(product.nombre)}">` : `<span class="site-search__thumb"></span>`}
       <span>
         <strong>${escapeHtml(product.nombre)}</strong>
