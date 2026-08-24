@@ -518,56 +518,62 @@
 .contact-float {
   position: fixed;
   z-index: 40;
-  right: 22px;
-  bottom: calc(22px + env(safe-area-inset-bottom, 0px));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.7rem;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  place-items: center;
   color: inherit;
   transition: transform 180ms ease;
 }
 
 .contact-float__prompt {
-  position: relative;
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 12px);
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
-  padding: 0.58rem 1.05rem;
+  min-height: 34px;
+  padding: 0.46rem 0.82rem;
   border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 999px;
   background: linear-gradient(120deg, #34c84a 0%, #087946 100%);
   color: var(--white);
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 800;
-  box-shadow: 0 11px 24px rgba(18, 125, 68, 0.2);
-  transition: box-shadow 180ms ease;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px) scale(0.96);
+  transform-origin: bottom right;
+  box-shadow: 0 9px 20px rgba(18, 125, 68, 0.18);
+  pointer-events: none;
+  animation: contact-prompt-cycle 5.4s 0.8s both;
+  transition: opacity 180ms ease, visibility 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
 .contact-float__prompt::after {
   content: "";
   position: absolute;
-  left: 50%;
+  right: 18px;
   bottom: -8px;
   width: 0;
   height: 0;
   border-top: 9px solid #118b45;
   border-right: 8px solid transparent;
   border-left: 8px solid transparent;
-  transform: translateX(-50%);
 }
 
 .contact-float__button {
   position: relative;
-  width: 66px;
-  height: 66px;
+  width: 56px;
+  height: 56px;
   display: grid;
   place-items: center;
-  border: 3px solid var(--white);
+  border: 2px solid var(--white);
   border-radius: 50%;
   background: linear-gradient(145deg, #28d875 0%, #18ad5b 100%);
   color: var(--white);
-  box-shadow: 0 13px 26px rgba(22, 138, 84, 0.24);
+  box-shadow: 0 10px 22px rgba(22, 138, 84, 0.22);
   transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
@@ -575,8 +581,13 @@
   transform: translateY(-2px);
 }
 
-.contact-float:hover .contact-float__prompt {
-  box-shadow: 0 14px 28px rgba(18, 125, 68, 0.24);
+.contact-float:hover .contact-float__prompt,
+.contact-float:focus-visible .contact-float__prompt {
+  animation: none;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  box-shadow: 0 12px 24px rgba(18, 125, 68, 0.22);
 }
 
 .contact-float:hover .contact-float__button {
@@ -593,46 +604,67 @@
   border-radius: 22px;
 }
 
-.contact-float__button svg {
-  width: 29px;
-  height: 29px;
-  fill: currentColor;
+.contact-float__button img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 50%;
+  object-fit: contain;
 }
 
 .contact-float__status {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 13px;
-  height: 13px;
+  top: 4px;
+  right: 4px;
+  width: 11px;
+  height: 11px;
   border: 2px solid var(--white);
   border-radius: 50%;
   background: #ef3131;
   box-shadow: 0 3px 7px rgba(210, 28, 28, 0.22);
 }
 
+@keyframes contact-prompt-cycle {
+  0%, 8% {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(5px) scale(0.96);
+  }
+  16%, 70% {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+  82%, 100% {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(3px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-float__prompt {
+    animation: none;
+  }
+}
+
 @media (max-width: 560px) {
   .contact-float {
-    right: 14px;
-    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-    gap: 0.45rem;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   }
 
   .contact-float__prompt {
-    min-height: 36px;
-    padding: 0.48rem 0.78rem;
-    font-size: 0.72rem;
+    min-height: 32px;
+    padding: 0.42rem 0.7rem;
+    font-size: 0.68rem;
   }
 
   .contact-float__button {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
   }
 
-  .contact-float__button svg {
-    width: 27px;
-    height: 27px;
-  }
 }
 
 .cart-item__placeholder .media-placeholder,

@@ -11,8 +11,8 @@ export function money(value) {
 
 export async function loadShell() {
   await Promise.all([
-    injectPartial("#siteHeader", withBase("/components/header.html?v=20260823-product-route")),
-    injectPartial("#siteFooter", withBase("/components/footer.html?v=20260823-product-route")),
+    injectPartial("#siteHeader", withBase("/components/header.html?v=20260824-lucide-categories")),
+    injectPartial("#siteFooter", withBase("/components/footer.html?v=20260824-lucide-categories")),
   ]);
   bindNavigationMenu();
   updateCartBadge();
@@ -79,6 +79,7 @@ function fallbackPartial(selector) {
           <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteMenu">Menu</button>
           <div class="nav-links" id="siteMenu">
             <a href="${withBase("/")}" data-route="/">Inicio</a>
+            <a href="${withBase("/servicios/")}" data-route="/servicios">Servicios</a>
             <a href="${withBase("/catalogo/")}" data-route="/catalogo">Productos</a>
             <a href="${withBase("/visita/")}" data-route="/visita">Agendar visita</a>
             <a href="${withBase("/seguimiento/")}" data-route="/seguimiento">Seguimiento</a>
@@ -107,6 +108,7 @@ function fallbackPartial(selector) {
         </nav>
         <nav class="footer-column" aria-label="Empresas">
           <h3>Empresas</h3>
+          <a href="${withBase("/servicios/")}" data-route="/servicios">Servicios</a>
           <a href="${withBase("/catalogo/")}" data-route="/catalogo">Productos</a>
           <a href="${withBase("/visita/")}" data-route="/visita">Agendar visita</a>
           <a href="mailto:ventas@lunacreativa.com.co">Correo a Ventas</a>
@@ -123,7 +125,7 @@ function fallbackPartial(selector) {
     <a class="contact-float" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20un%20proyecto." target="_blank" rel="noreferrer" aria-label="Hablar con Luna Creativa por WhatsApp">
       <span class="contact-float__prompt">Hablemos ahora</span>
       <span class="contact-float__button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 15.2 16.6 13.5c-.7-.3-1.4-.1-1.9.4l-1.4 1.7a14.8 14.8 0 0 1-4.9-4.9l1.7-1.4c.5-.5.7-1.2.4-1.9L8.8 3.6c-.3-.8-1.2-1.2-2-.9L3.5 4c-.7.3-1.1 1-.9 1.7.9 8.2 7.5 14.8 15.7 15.7.7.2 1.4-.2 1.7-.9l1.3-3.3c.3-.8-.1-1.7-.9-2Z"></path></svg>
+        <img src="${withBase("/assets/img/icons/whatsapp.png")}" alt="" width="56" height="56" aria-hidden="true">
         <span class="contact-float__status" aria-hidden="true"></span>
       </span>
     </a>

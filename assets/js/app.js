@@ -22,10 +22,11 @@ import {
   updatePhotoUrl,
   updateQuantity,
 } from "./cart.js?v=20260823-product-route";
-import { loadShell, money, setActiveRoute, updateCartBadge } from "./ui.js?v=20260823-product-route";
+import { loadShell, money, setActiveRoute, updateCartBadge } from "./ui.js?v=20260824-lucide-categories";
 
 const routes = {
   "/": renderHome,
+  "/servicios": renderServices,
   "/catalogo": renderCatalog,
   "/producto": renderProduct,
   "/carrito": renderCart,
@@ -41,6 +42,79 @@ const storefront = {
   product: null,
   productSlug: "",
 };
+
+const serviceCatalog = [
+  {
+    category: "avisos",
+    title: "Letreros en neón",
+    description: "Letreros luminosos personalizados para negocios, celebraciones y espacios que buscan una presencia memorable.",
+    details: ["Negocios y eventos", "Diseño personalizado", "Varios tamaños"],
+    images: ["neon1.jpg", "neon2.jpg", "neon3.jpg"],
+  },
+  {
+    category: "avisos",
+    title: "Avisos caja de luz",
+    description: "Avisos luminosos para destacar marcas, logos y puntos comerciales con visibilidad constante.",
+    details: ["Fachadas", "Iluminación LED", "Medida personalizada"],
+    images: ["cajaluz1.jpg", "cajaluz2.jpg", "cajaluz3.jpg"],
+  },
+  {
+    category: "avisos",
+    title: "Avisos bastidor o valla",
+    description: "Estructuras de gran formato para fachadas y exteriores que necesitan presencia comercial a distancia.",
+    details: ["Exterior", "Gran formato", "Lona tensada"],
+    images: ["bastidor1.jpg", "bastidor2.jpg"],
+  },
+  {
+    category: "avisos",
+    title: "Letreros en acrílico con luz",
+    description: "Piezas iluminadas para interiores con una estética limpia, moderna y profesional.",
+    details: ["Interiores", "Acrílico", "Iluminación 12 V"],
+    images: ["acrilicoluz1.jpg", "acrilicoluz2.jpg", "acrilicoluz3.jpg"],
+  },
+  {
+    category: "punto-venta",
+    title: "Topezones publicitarios",
+    description: "Piezas para exterior que ayudan a señalizar, orientar y destacar información clave del negocio.",
+    details: ["Exterior", "Estructura metálica", "Diseño a medida"],
+    images: ["topezon1.jpg", "topezon2.jpg"],
+  },
+  {
+    category: "avisos",
+    title: "Cajas de luz redondas",
+    description: "Letreros luminosos de doble cara para identificar negocios desde distintos ángulos.",
+    details: ["Doble cara", "Formato redondo", "Uso exterior"],
+    images: ["cajaluzredondo1.jpg", "cajaluzredondo2.jpg", "cajaluzredondo3.jpg"],
+  },
+  {
+    category: "punto-venta",
+    title: "Rompe tráficos",
+    description: "Estructuras publicitarias de doble cara creadas para captar atención en ambos sentidos de paso.",
+    details: ["Doble cara", "Uso exterior", "Alta visibilidad"],
+    images: ["rompetraficos1.jpg", "rompetraficos2.jpg"],
+  },
+  {
+    category: "activaciones",
+    title: "Ruletas publicitarias",
+    description: "Elementos promocionales para campañas, eventos y activaciones que atraen, entretienen y generan recordación.",
+    details: ["Activaciones", "Personalizadas", "Dinámica de premios"],
+    images: ["ruleta1.jpg", "ruleta2.jpg", "ruleta3.jpg"],
+  },
+  {
+    category: "avisos",
+    title: "Letreros en 2D",
+    description: "Letras y logotipos para muros, recepciones y zonas de atención que refuerzan la presencia de marca.",
+    details: ["Interiores", "Acrílico", "Logo en pared"],
+    images: ["letras2D1.jpg", "letras2D2.jpg", "letras2D3.jpg"],
+  },
+  {
+    category: "punto-venta",
+    title: "Habladores QR",
+    description: "Piezas funcionales para pagos, redes sociales y acceso rápido a información en el punto de atención.",
+    details: ["Pagos QR", "Redes sociales", "Punto de venta"],
+    images: ["hablador1.jpg", "hablador2.jpg"],
+  },
+];
 
 document.addEventListener("click", (event) => {
   const routeLink = event.target.closest("[data-route]");
@@ -185,42 +259,48 @@ async function renderHome() {
     <section class="section home-services" aria-labelledby="services-title">
       <div class="home-section-heading">
         <div>
-          <p class="section-kicker">Lo que hacemos</p>
-          <h2 id="services-title">Soluciones para que tu marca se vea.</h2>
+          <p class="section-kicker">Lo que más hacemos</p>
+          <h2 id="services-title">Productos que impulsan tu negocio.</h2>
         </div>
-        <p>Desde una pieza puntual hasta la imagen completa de un espacio, construimos cada proyecto según lo que necesitas comunicar.</p>
+        <p>Una selección de nuestras soluciones más solicitadas, producidas a la medida de cada marca, campaña o necesidad.</p>
       </div>
       <div class="home-services__grid">
-        <article class="home-service-card">
-          <span class="home-service-card__mark">3D</span>
-          <h3>Avisos 2D y 3D</h3>
-          <p>Letreros y elementos de fachada pensados para identificar y destacar tu negocio.</p>
-        </article>
-        <article class="home-service-card">
-          <span class="home-service-card__mark">CL</span>
-          <h3>Corte láser</h3>
-          <p>Piezas precisas para señalización, decoración, exhibición y proyectos personalizados.</p>
-        </article>
-        <article class="home-service-card">
-          <span class="home-service-card__mark">IMP</span>
-          <h3>Impresión</h3>
-          <p>Material gráfico para comunicar promociones, información y presencia de marca.</p>
-        </article>
-        <article class="home-service-card">
-          <span class="home-service-card__mark">BR</span>
-          <h3>Branding</h3>
-          <p>Aplicaciones visuales coherentes para presentar tu marca de forma profesional.</p>
-        </article>
-        <article class="home-service-card">
-          <span class="home-service-card__mark">P</span>
-          <h3>Personalizados</h3>
-          <p>Productos y detalles producidos a la medida de tu marca, ocasión o campaña.</p>
-        </article>
-        <article class="home-service-card">
-          <span class="home-service-card__mark">EV</span>
-          <h3>Publicidad para eventos</h3>
-          <p>Piezas visuales que ayudan a identificar, ambientar y comunicar tu evento.</p>
-        </article>
+        <a class="home-service-card" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20una%20ruleta%20publicitaria." target="_blank" rel="noreferrer">
+          <span class="home-service-card__media"><img src="${withBase("/assets/img/services/ruletas.jpeg")}" alt="Ruleta publicitaria personalizada" loading="lazy"></span>
+          <span class="home-service-card__body"><h3>Ruletas publicitarias</h3><p>Dinámicas personalizadas para activaciones, promociones y eventos.</p><span class="home-service-card__action">Cotizar ruleta <span aria-hidden="true">→</span></span></span>
+        </a>
+        <a class="home-service-card" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20sellos%20personalizados." target="_blank" rel="noreferrer">
+          <span class="home-service-card__media"><img src="${withBase("/assets/img/services/sellos.jpg")}" alt="Sellos personalizados" loading="lazy"></span>
+          <span class="home-service-card__body"><h3>Sellos personalizados</h3><p>Sellos empresariales y profesionales fabricados a la medida.</p><span class="home-service-card__action">Cotizar sellos <span aria-hidden="true">→</span></span></span>
+        </a>
+        <a class="home-service-card" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20un%20proyecto%20de%20corte%20laser." target="_blank" rel="noreferrer">
+          <span class="home-service-card__media"><img src="${withBase("/assets/img/services/corte-laser.jpg")}" alt="Proceso de corte láser sobre MDF" loading="lazy"></span>
+          <span class="home-service-card__body"><h3>Corte láser</h3><p>Piezas precisas en MDF, acrílico y otros materiales.</p><span class="home-service-card__action">Cotizar proyecto <span aria-hidden="true">→</span></span></span>
+        </a>
+        <a class="home-service-card" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20un%20aviso%20neon." target="_blank" rel="noreferrer">
+          <span class="home-service-card__media"><img src="${withBase("/assets/img/services/avisos-neon.jpeg")}" alt="Aviso de neón personalizado" loading="lazy"></span>
+          <span class="home-service-card__body"><h3>Avisos neón</h3><p>Letreros luminosos para negocios, espacios y eventos.</p><span class="home-service-card__action">Cotizar aviso <span aria-hidden="true">→</span></span></span>
+        </a>
+        <a class="home-service-card" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20un%20aviso%202D%20o%203D." target="_blank" rel="noreferrer">
+          <span class="home-service-card__media"><img src="${withBase("/assets/img/services/avisos-2d-3d.jpg")}" alt="Avisos personalizados en 2D y 3D" loading="lazy"></span>
+          <span class="home-service-card__body"><h3>Avisos 2D y 3D</h3><p>Letras y elementos de fachada para destacar tu marca.</p><span class="home-service-card__action">Cotizar aviso <span aria-hidden="true">→</span></span></span>
+        </a>
+        <a class="home-service-card" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20talonarios%20personalizados." target="_blank" rel="noreferrer">
+          <span class="home-service-card__media"><img src="${withBase("/assets/img/services/talonarios.jpg")}" alt="Talonarios personalizados para rifas y comprobantes de pago" loading="lazy"></span>
+          <span class="home-service-card__body"><h3>Talonarios</h3><p>Formatos numerados y personalizados para el control de tu negocio.</p><span class="home-service-card__action">Cotizar talonarios <span aria-hidden="true">→</span></span></span>
+        </a>
+        <a class="home-service-card" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20papeleria%20comercial." target="_blank" rel="noreferrer">
+          <span class="home-service-card__media"><img src="${withBase("/assets/img/services/papeleria.jpg")}" alt="Papelería e identidad comercial" loading="lazy"></span>
+          <span class="home-service-card__body"><h3>Papelería comercial</h3><p>Tarjetas, membretes, carpetas y piezas corporativas.</p><span class="home-service-card__action">Cotizar papelería <span aria-hidden="true">→</span></span></span>
+        </a>
+        <a class="home-service-card" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20un%20trabajo%20de%20impresion." target="_blank" rel="noreferrer">
+          <span class="home-service-card__media"><img src="${withBase("/assets/img/services/impresiones.jpg")}" alt="Impresión publicitaria de gran formato" loading="lazy"></span>
+          <span class="home-service-card__body"><h3>Impresiones</h3><p>Material gráfico para campañas, promociones y comunicación visual.</p><span class="home-service-card__action">Cotizar impresión <span aria-hidden="true">→</span></span></span>
+        </a>
+      </div>
+      <div class="home-services__footer">
+        <p>¿Buscas otra solución publicitaria?</p>
+        <a class="btn secondary" href="${withBase("/servicios/")}" data-route="/servicios">Explorar todos los servicios</a>
       </div>
     </section>
 
@@ -233,49 +313,70 @@ async function renderHome() {
           </div>
           <p>Cuéntanos el objetivo. Nosotros te ayudamos a definir las piezas, materiales y producción.</p>
         </div>
-        <div class="home-needs__grid">
-          <article><span>01</span><h3>Abrir un negocio</h3><p>Identidad visible, aviso y piezas esenciales para empezar con una imagen clara.</p></article>
-          <article><span>02</span><h3>Renovar tu imagen</h3><p>Actualización de fachada, señalización y aplicaciones para verte más vigente.</p></article>
-          <article><span>03</span><h3>Preparar un evento</h3><p>Elementos gráficos y personalizados para una experiencia visual consistente.</p></article>
-          <article><span>04</span><h3>Lanzar una campaña</h3><p>Piezas impresas y visuales alineadas con una promoción o temporada comercial.</p></article>
+        <div class="home-needs__grid" role="group" aria-label="Selecciona el objetivo de tu proyecto">
+          <button class="home-need-card is-active" type="button" data-need="apertura" aria-pressed="true">
+            <span class="home-need-card__top"><b>01</b><i aria-hidden="true">↗</i></span>
+            <span class="home-need-card__copy"><strong>Abrir un negocio</strong><small>Todo lo esencial para empezar con una imagen clara y profesional.</small></span>
+          </button>
+          <button class="home-need-card" type="button" data-need="renovacion" aria-pressed="false">
+            <span class="home-need-card__top"><b>02</b><i aria-hidden="true">↗</i></span>
+            <span class="home-need-card__copy"><strong>Renovar tu imagen</strong><small>Actualiza la fachada y los puntos donde tus clientes ven tu marca.</small></span>
+          </button>
+          <button class="home-need-card" type="button" data-need="evento" aria-pressed="false">
+            <span class="home-need-card__top"><b>03</b><i aria-hidden="true">↗</i></span>
+            <span class="home-need-card__copy"><strong>Preparar un evento</strong><small>Crea una experiencia visual coherente, atractiva y memorable.</small></span>
+          </button>
+          <button class="home-need-card" type="button" data-need="campana" aria-pressed="false">
+            <span class="home-need-card__top"><b>04</b><i aria-hidden="true">↗</i></span>
+            <span class="home-need-card__copy"><strong>Lanzar una campaña</strong><small>Convierte una promoción en piezas listas para comunicar y vender.</small></span>
+          </button>
         </div>
+        <div class="home-needs__result" id="needResult" aria-live="polite"></div>
       </section>
     </div>
 
-    <section class="section home-portfolio" aria-labelledby="portfolio-title">
+    <section class="section home-trust" aria-labelledby="trust-title">
       <div class="home-section-heading">
         <div>
-          <p class="section-kicker">Portafolio</p>
-          <h2 id="portfolio-title">Proyectos que podemos desarrollar.</h2>
+          <p class="section-kicker">Trabajamos con claridad</p>
+          <h2 id="trust-title">Tu proyecto no avanza a ciegas.</h2>
         </div>
-        <p>Estas composiciones son muestras conceptuales. Las sustituiremos progresivamente por fotografías de trabajos reales autorizados.</p>
+        <p>Antes de producir, dejamos definidos contigo los puntos importantes para evitar confusiones y cambios inesperados.</p>
       </div>
-      <div class="home-portfolio__notice">Muestras conceptuales · No corresponden a clientes ni proyectos entregados</div>
-      <div class="home-portfolio__grid">
-        <article class="home-project-card">
-          <div class="home-project-art home-project-art--facade" role="img" aria-label="Representación conceptual de un aviso tridimensional">
-            <span class="project-building"></span><strong>LUNA</strong>
+      <div class="home-trust__layout">
+        <div class="home-trust__document" aria-label="Confirmaciones previas a producción">
+          <div class="home-trust__document-head">
+            <div>
+              <span>Revisión previa</span>
+              <strong>Confirmamos contigo</strong>
+            </div>
+            <span class="home-trust__badge">Antes de producir</span>
           </div>
-          <div class="home-project-copy"><span>Avisos 2D y 3D</span><h3>Fachada con presencia</h3><p>Identificación exterior clara y visible.</p></div>
-        </article>
-        <article class="home-project-card">
-          <div class="home-project-art home-project-art--laser" role="img" aria-label="Representación conceptual de señalización cortada en láser">
-            <span>ENTRADA</span><i></i><span>RECEPCIÓN</span>
+          <div class="home-trust__progress" aria-hidden="true"><span></span></div>
+          <ol class="home-trust__checks">
+            <li style="--trust-delay: 100ms"><span aria-hidden="true">✓</span><div><strong>Alcance y precio</strong><p>Qué incluye la propuesta y cuál es el valor acordado.</p></div></li>
+            <li style="--trust-delay: 220ms"><span aria-hidden="true">✓</span><div><strong>Diseño y contenido</strong><p>Textos, medidas y composición antes de fabricar.</p></div></li>
+            <li style="--trust-delay: 340ms"><span aria-hidden="true">✓</span><div><strong>Materiales y acabados</strong><p>La solución definida según el uso y el espacio.</p></div></li>
+            <li style="--trust-delay: 460ms"><span aria-hidden="true">✓</span><div><strong>Tiempo y forma de entrega</strong><p>Producción, instalación o envío coordinados previamente.</p></div></li>
+          </ol>
+        </div>
+        <aside class="home-trust__promise">
+          <div class="home-trust__shield" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3 5.5 5.8v5.4c0 4.2 2.7 7.9 6.5 9.8 3.8-1.9 6.5-5.6 6.5-9.8V5.8L12 3Z"></path><path d="m9 12 2 2 4-4"></path></svg>
           </div>
-          <div class="home-project-copy"><span>Corte láser</span><h3>Señalización interior</h3><p>Piezas precisas para orientar y ambientar.</p></div>
-        </article>
-        <article class="home-project-card">
-          <div class="home-project-art home-project-art--print" role="img" aria-label="Representación conceptual de piezas impresas para campaña">
-            <i></i><i></i><i></i>
+          <p class="section-kicker">Compromiso de trabajo</p>
+          <h3>Tú apruebas antes de fabricar.</h3>
+          <p>Queremos que sepas qué se hará, cómo se hará y cuándo estará listo. Si algún aspecto cambia, lo conversamos antes de continuar.</p>
+          <dl>
+            <div><dt>Alcance</dt><dd>Definido</dd></div>
+            <div><dt>Diseño</dt><dd>Aprobado</dd></div>
+            <div><dt>Entrega</dt><dd>Coordinada</dd></div>
+          </dl>
+          <div class="home-trust__note">
+            <span aria-hidden="true">i</span>
+            <p>Conserva la cotización y las confirmaciones del proyecto como referencia durante el proceso.</p>
           </div>
-          <div class="home-project-copy"><span>Impresión</span><h3>Campaña comercial</h3><p>Una misma idea aplicada en diferentes formatos.</p></div>
-        </article>
-        <article class="home-project-card">
-          <div class="home-project-art home-project-art--event" role="img" aria-label="Representación conceptual de elementos personalizados para eventos">
-            <span>MARCA</span><i></i><b>EVENTO</b>
-          </div>
-          <div class="home-project-copy"><span>Eventos y personalizados</span><h3>Experiencia de marca</h3><p>Elementos coordinados para una presentación memorable.</p></div>
-        </article>
+        </aside>
       </div>
     </section>
 
@@ -294,6 +395,34 @@ async function renderHome() {
           <li><span>03</span><div><h3>Producción</h3><p>Fabricamos las piezas aprobadas para tu proyecto.</p></div></li>
           <li><span>04</span><div><h3>Instalación o entrega</h3><p>Coordinamos la etapa final según el producto y destino.</p></div></li>
         </ol>
+        <div class="home-clients" aria-labelledby="clients-title">
+          <div class="home-clients__head">
+            <p class="section-kicker">Experiencia que respalda</p>
+            <h3 id="clients-title">Marcas e instituciones que han confiado en nuestro trabajo.</h3>
+          </div>
+          <div class="home-clients__marquee" role="region" aria-label="Empresas e instituciones atendidas">
+            <div class="home-clients__track">
+              <div class="home-clients__group">
+                <span><img src="${withBase("/assets/img/clientes/bbva.png")}" alt="BBVA" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/banco-agrario.png")}" alt="Banco Agrario de Colombia" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/alcaldia-neiva.svg")}" alt="Alcaldía de Neiva" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/interrapidisimo.svg")}" alt="Inter Rapidísimo" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/policia-nacional.svg")}" alt="Policía Nacional de Colombia" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/cam.svg")}" alt="Corporación Autónoma Regional del Alto Magdalena" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/bloquefooder.png")}" alt="Bloquefooder" loading="lazy"></span>
+              </div>
+              <div class="home-clients__group" aria-hidden="true">
+                <span><img src="${withBase("/assets/img/clientes/bbva.png")}" alt="" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/banco-agrario.png")}" alt="" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/alcaldia-neiva.svg")}" alt="" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/interrapidisimo.svg")}" alt="" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/policia-nacional.svg")}" alt="" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/cam.svg")}" alt="" loading="lazy"></span>
+                <span><img src="${withBase("/assets/img/clientes/bloquefooder.png")}" alt="" loading="lazy"></span>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
 
@@ -346,6 +475,8 @@ async function renderHome() {
     </div>
   `;
   initHeroMotion();
+  initNeedsNavigator();
+  initTrustSection();
 }
 
 function initHeroMotion() {
@@ -375,6 +506,108 @@ function initHeroMotion() {
     showcase.style.removeProperty("--hero-shift-y");
     showcase.style.removeProperty("--hero-tilt");
   });
+}
+
+function initNeedsNavigator() {
+  const section = document.querySelector(".home-needs");
+  const cards = [...(section?.querySelectorAll("[data-need]") || [])];
+  const result = section?.querySelector("#needResult");
+  if (!section || !cards.length || !result) return;
+
+  const needs = {
+    apertura: {
+      eyebrow: "Plan de apertura",
+      title: "Empieza por hacer visible y confiable tu negocio.",
+      text: "Construimos una base práctica para que tu local se identifique, atienda y comunique desde el primer día.",
+      items: ["Aviso de fachada", "Papelería comercial", "Sello empresarial"],
+      action: "Planear mi apertura",
+      message: "Hola Luna Creativa, voy a abrir un negocio y quiero asesoría para definir el aviso, la papelería y las piezas esenciales.",
+    },
+    renovacion: {
+      eyebrow: "Renovación de marca",
+      title: "Actualiza los puntos que más ven tus clientes.",
+      text: "Revisamos la fachada, la recepción y la señalización para priorizar los cambios con mayor impacto visual.",
+      items: ["Avisos 2D o 3D", "Señalización", "Impresos de marca"],
+      action: "Renovar mi imagen",
+      message: "Hola Luna Creativa, quiero renovar la imagen de mi negocio y necesito orientación sobre fachada, señalización e impresos.",
+    },
+    evento: {
+      eyebrow: "Solución para eventos",
+      title: "Haz que cada elemento se sienta parte de la misma experiencia.",
+      text: "Coordinamos las piezas visuales e interactivas de acuerdo con el espacio, el público y la dinámica del evento.",
+      items: ["Ruletas", "Habladores y señalización", "Impresos personalizados"],
+      action: "Preparar mi evento",
+      message: "Hola Luna Creativa, estoy preparando un evento y quiero cotizar piezas visuales, impresos y elementos interactivos.",
+    },
+    campana: {
+      eyebrow: "Campaña comercial",
+      title: "Lleva una misma idea a todos los formatos que necesitas.",
+      text: "Adaptamos el mensaje de tu promoción a piezas visibles, consistentes y listas para punto de venta o distribución.",
+      items: ["Impresiones", "Pendones y exhibición", "Ruletas promocionales"],
+      action: "Activar mi campaña",
+      message: "Hola Luna Creativa, quiero lanzar una campaña comercial y necesito definir las piezas impresas y promocionales.",
+    },
+  };
+
+  const renderNeed = (key, animate = true) => {
+    const need = needs[key];
+    if (!need) return;
+    if (animate) result.classList.remove("is-changing");
+    result.innerHTML = `
+      <div class="home-needs__result-copy">
+        <span>${need.eyebrow}</span>
+        <h3>${need.title}</h3>
+        <p>${need.text}</p>
+      </div>
+      <div class="home-needs__result-actions">
+        <ul>${need.items.map((item) => `<li>${item}</li>`).join("")}</ul>
+        <a href="https://wa.me/573114512495?text=${encodeURIComponent(need.message)}" target="_blank" rel="noreferrer">${need.action} <span aria-hidden="true">→</span></a>
+      </div>
+    `;
+    if (animate) requestAnimationFrame(() => result.classList.add("is-changing"));
+  };
+
+  renderNeed("apertura", false);
+
+  cards.forEach((card, index) => {
+    card.style.setProperty("--need-delay", `${index * 85}ms`);
+    card.addEventListener("click", () => {
+      cards.forEach((item) => {
+        const active = item === card;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-pressed", String(active));
+      });
+      renderNeed(card.dataset.need);
+    });
+  });
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    section.classList.add("is-visible");
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    section.classList.add("is-visible");
+    observer.disconnect();
+  }, { threshold: 0.22 });
+  observer.observe(section);
+}
+
+function initTrustSection() {
+  const section = document.querySelector(".home-trust");
+  if (!section) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    section.classList.add("is-visible");
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    section.classList.add("is-visible");
+    observer.disconnect();
+  }, { threshold: 0.2 });
+  observer.observe(section);
 }
 
 async function renderVisit() {
@@ -616,6 +849,100 @@ function bindVisitForm() {
   });
 }
 
+function renderServices() {
+  app.innerHTML = `
+    <section class="services-hero" aria-labelledby="services-page-title">
+      <div class="services-hero__content">
+        <p class="section-kicker">Servicios de publicidad</p>
+        <h1 id="services-page-title">Todo lo que hacemos,<br>en un solo lugar.</h1>
+        <p>Explora soluciones reales para fachadas, puntos de venta, campañas y eventos. Te asesoramos en diseño, materiales, producción e instalación o entrega.</p>
+        <div class="services-hero__actions">
+          <a class="btn primary" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20recibir%20asesoria%20para%20un%20proyecto%20publicitario." target="_blank" rel="noreferrer">Hablar con un asesor</a>
+          <a class="btn secondary" href="${withBase("/visita/")}" data-route="/visita">Agendar una visita</a>
+        </div>
+      </div>
+      <div class="services-hero__summary" aria-label="Cómo trabajamos">
+        <span><strong>01</strong> Asesoría</span>
+        <span><strong>02</strong> Diseño</span>
+        <span><strong>03</strong> Producción</span>
+        <span><strong>04</strong> Instalación o entrega</span>
+      </div>
+    </section>
+
+    <section class="section services-directory" aria-labelledby="services-directory-title">
+      <div class="services-directory__head">
+        <div>
+          <p class="section-kicker">Portafolio de soluciones</p>
+          <h2 id="services-directory-title">Encuentra lo que necesita tu negocio.</h2>
+        </div>
+        <div class="service-filters" role="group" aria-label="Filtrar servicios">
+          <button class="is-active" type="button" data-service-filter="all" aria-pressed="true">Todos</button>
+          <button type="button" data-service-filter="avisos" aria-pressed="false">Avisos y letreros</button>
+          <button type="button" data-service-filter="punto-venta" aria-pressed="false">Punto de venta</button>
+          <button type="button" data-service-filter="activaciones" aria-pressed="false">Activaciones</button>
+        </div>
+      </div>
+
+      <div class="services-directory__grid" id="servicesGrid">
+        ${serviceCatalog.map(serviceCardMarkup).join("")}
+      </div>
+    </section>
+
+    <section class="section services-custom">
+      <div>
+        <p class="section-kicker kicker--light">Proyectos especiales</p>
+        <h2>¿No encuentras exactamente lo que buscas?</h2>
+        <p>También producimos soluciones personalizadas. Cuéntanos tu idea, las medidas, el lugar de uso y la fecha en que la necesitas.</p>
+      </div>
+      <a class="btn btn--cta-primary" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20tengo%20un%20proyecto%20publicitario%20especial%20y%20quiero%20cotizarlo." target="_blank" rel="noreferrer">Cotizar proyecto especial</a>
+    </section>
+  `;
+
+  bindServiceFilters();
+}
+
+function serviceCardMarkup(service) {
+  const images = service.images.map((image, index) => `
+    <img src="${withBase(`/assets/img/services/gallery/${image}`)}" alt="${index === 0 ? escapeHtml(service.title) : `Ejemplo ${index + 1} de ${escapeHtml(service.title)}`}" loading="lazy">
+  `).join("");
+  const message = encodeURIComponent(`Hola Luna Creativa, quiero cotizar ${service.title.toLowerCase()}.`);
+
+  return `
+    <article class="service-directory-card" data-service-category="${service.category}">
+      <div class="service-directory-card__gallery service-directory-card__gallery--${Math.min(service.images.length, 3)}">
+        ${images}
+      </div>
+      <div class="service-directory-card__content">
+        <h3>${escapeHtml(service.title)}</h3>
+        <p>${escapeHtml(service.description)}</p>
+        <ul aria-label="Características">
+          ${service.details.map((detail) => `<li>${escapeHtml(detail)}</li>`).join("")}
+        </ul>
+        <a href="https://wa.me/573114512495?text=${message}" target="_blank" rel="noreferrer">Solicitar cotización <span aria-hidden="true">→</span></a>
+      </div>
+    </article>
+  `;
+}
+
+function bindServiceFilters() {
+  const buttons = [...document.querySelectorAll("[data-service-filter]")];
+  const cards = [...document.querySelectorAll("[data-service-category]")];
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const filter = button.dataset.serviceFilter;
+      buttons.forEach((item) => {
+        const active = item === button;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-pressed", String(active));
+      });
+      cards.forEach((card) => {
+        card.hidden = filter !== "all" && card.dataset.serviceCategory !== filter;
+      });
+    });
+  });
+}
+
 async function renderCatalog() {
   const catalog = await ensureCatalog();
   const activeCategory = activeCategorySlug();
@@ -667,12 +994,12 @@ function categoryBar() {
   return `
     <nav class="category-bar" aria-label="Categorias de tienda">
       <div class="category-bar__inner">
-        ${categoryItem("Todos", "/catalogo/", giftIcon(), !activeCategory)}
+        ${categoryItem("Todos", "/catalogo/", "layout-grid", !activeCategory)}
         ${
           categories.length
             ? categories
-                .map((category, index) =>
-                  categoryItem(category.nombre, `/catalogo/?categoria=${encodeURIComponent(category.slug)}`, iconByIndex(index), category.slug === activeCategory)
+                .map((category) =>
+                  categoryItem(category.nombre, `/catalogo/?categoria=${encodeURIComponent(category.slug)}`, iconForCategory(category), category.slug === activeCategory)
                 )
                 .join("")
             : ""
@@ -683,9 +1010,10 @@ function categoryBar() {
 }
 
 function categoryItem(label, path, icon, active = false) {
+  const iconUrl = withBase(`/assets/icons/lucide/${icon}.svg`);
   return `
     <a class="category-item ${active ? "active" : ""}" href="${withBase(path)}" data-route="${path.replace(/\/$/, "") || "/"}">
-      <span class="category-icon" aria-hidden="true">${icon}</span>
+      <span class="category-icon" aria-hidden="true"><span class="category-icon__glyph" style="--category-icon-url: url('${iconUrl}')"></span></span>
       <span>${escapeHtml(label)}</span>
     </a>
   `;
@@ -720,30 +1048,6 @@ function swatchClass(color) {
     "#b98558": "swatch-wood",
   };
   return colorMap[color] || "swatch-neutral";
-}
-
-function puzzleIcon() {
-  return `<svg viewBox="0 0 24 24"><path d="M9 3h5v4h2a2 2 0 1 1 0 4h-2v3h-3v2a2 2 0 1 1-4 0v-2H3V9h4V7a2 2 0 1 1 4 0v2h3V6H9z"></path></svg>`;
-}
-
-function mugIcon() {
-  return `<svg viewBox="0 0 24 24"><path d="M5 6h11v7a5 5 0 0 1-5 5H9a4 4 0 0 1-4-4z"></path><path d="M16 8h2a3 3 0 0 1 0 6h-2"></path><path d="M6 3h10"></path></svg>`;
-}
-
-function laserIcon() {
-  return `<svg viewBox="0 0 24 24"><path d="M5 19h14"></path><path d="M8 19V8"></path><path d="M8 8l5-3 3 3"></path><path d="M16 8l3-2"></path><path d="M16 8l3 2"></path><path d="M12 12l-2 7"></path></svg>`;
-}
-
-function penIcon() {
-  return `<svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11a2.2 2.2 0 0 0-3-3L5 16z"></path><path d="M14 6l4 4"></path></svg>`;
-}
-
-function homeIcon() {
-  return `<svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"></path><path d="M6 10v10h12V10"></path><path d="M10 20v-6h4v6"></path></svg>`;
-}
-
-function giftIcon() {
-  return `<svg viewBox="0 0 24 24"><path d="M4 10h16v10H4z"></path><path d="M4 10V7h16v3"></path><path d="M12 7v13"></path><path d="M8 7a2 2 0 1 1 4 0"></path><path d="M16 7a2 2 0 1 0-4 0"></path></svg>`;
 }
 
 async function renderProduct() {
@@ -1872,9 +2176,35 @@ function escapeHtml(text) {
     .replaceAll("'", "&#39;");
 }
 
-function iconByIndex(index) {
-  const icons = [puzzleIcon(), mugIcon(), laserIcon(), penIcon(), homeIcon(), giftIcon()];
-  return icons[index % icons.length];
+function iconForCategory(category = {}) {
+  const key = normalizeIconKey(`${category.slug || ""} ${category.nombre || ""}`);
+  const rules = [
+    { terms: ["rompecabezas", "puzzle"], icon: "puzzle" },
+    { terms: ["sello", "stamp"], icon: "stamp" },
+    { terms: ["impresion", "impreso", "printer"], icon: "printer" },
+    { terms: ["talonario", "rifa", "ticket"], icon: "ticket-percent" },
+    { terms: ["papeleria", "cuaderno", "agenda", "notebook"], icon: "notebook-tabs" },
+    { terms: ["corte laser", "laser"], icon: "scan-line" },
+    { terms: ["mug", "taza", "cafe"], icon: "coffee" },
+    { terms: ["regalo", "detalle", "personalizado"], icon: "gift" },
+    { terms: ["aviso", "letrero", "neon", "senalizacion"], icon: "panels-top-left" },
+    { terms: ["publicidad", "campana", "promocion"], icon: "megaphone" },
+    { terms: ["venta", "e shop", "eshop", "tienda"], icon: "store" },
+    { terms: ["carrito", "cart"], icon: "shopping-cart" },
+    { terms: ["bolsa", "shopping bag"], icon: "shopping-bag" },
+    { terms: ["precio", "oferta", "descuento"], icon: "badge-dollar-sign" },
+    { terms: ["lapicero", "esfero", "escritura"], icon: "pen-line" },
+    { terms: ["etiqueta", "tag"], icon: "tags" },
+  ];
+  return rules.find((rule) => rule.terms.some((term) => key.includes(term)))?.icon || "package";
+}
+
+function normalizeIconKey(value) {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[-_]+/g, " ")
+    .toLowerCase();
 }
 
 function renderStoreError(error) {
