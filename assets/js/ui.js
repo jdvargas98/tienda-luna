@@ -11,7 +11,7 @@ export function money(value) {
 
 export async function loadShell() {
   await Promise.all([
-    injectPartial("#siteHeader", withBase("/components/header.html?v=20260824-lucide-categories")),
+    injectPartial("#siteHeader", withBase("/components/header.html?v=20261022-menu-compacto")),
     injectPartial("#siteFooter", withBase("/components/footer.html?v=20261022-tienda-es")),
   ]);
   bindNavigationMenu();
@@ -65,17 +65,9 @@ function fallbackPartial(selector) {
     return `
       <header class="site-header">
         <nav class="nav-shell" aria-label="Navegacion principal">
-          <a class="brand" href="${withBase("/")}" data-route="/">
+          <a class="brand" href="${withBase("/")}" data-route="/" aria-label="Luna Creativa tienda">
             <img src="${withBase("/assets/img/logo/luna-creativa.png")}" alt="Logo Luna Creativa" width="42" height="42">
-            <span>Luna Creativa</span>
           </a>
-          <form class="site-search" id="siteSearch" role="search">
-            <input id="siteSearchInput" type="search" autocomplete="off" placeholder="Buscar productos personalizados...">
-            <button type="submit" aria-label="Buscar">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
-            </button>
-            <div class="site-search__suggestions" id="siteSearchSuggestions" aria-live="polite"></div>
-          </form>
           <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteMenu">Menu</button>
           <div class="nav-links" id="siteMenu">
             <a href="${withBase("/")}" data-route="/">Inicio</a>
@@ -83,8 +75,15 @@ function fallbackPartial(selector) {
             <a href="${withBase("/catalogo/")}" data-route="/catalogo">Productos</a>
             <a href="${withBase("/visita/")}" data-route="/visita">Agendar visita</a>
             <a href="${withBase("/seguimiento/")}" data-route="/seguimiento">Seguimiento</a>
-            <a class="cart-link" href="${withBase("/carrito/")}" data-route="/carrito">Carrito <span id="cartBadge">0</span></a>
           </div>
+          <form class="site-search" id="siteSearch" role="search">
+            <input id="siteSearchInput" type="search" autocomplete="off" placeholder="Buscar productos..." aria-label="Buscar productos">
+            <button type="submit" aria-label="Buscar">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            </button>
+            <div class="site-search__suggestions" id="siteSearchSuggestions" aria-live="polite"></div>
+          </form>
+          <a class="cart-link" href="${withBase("/carrito/")}" data-route="/carrito">Carrito <span id="cartBadge">0</span></a>
         </nav>
       </header>
     `;

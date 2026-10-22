@@ -21,7 +21,7 @@
   min-height: 72px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 1rem;
 }
 
@@ -36,13 +36,29 @@
   border-radius: 12px;
 }
 
+.nav-shell > .brand {
+  flex-shrink: 0;
+}
+
+.nav-shell > .nav-links {
+  margin-right: 0;
+  gap: clamp(0.65rem, 1.5vw, 1.4rem);
+}
+
+.nav-shell > .cart-link {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
 .site-search {
   position: relative;
-  flex: 1;
-  max-width: 520px;
+  flex: 0 1 270px;
+  max-width: 270px;
+  min-width: 150px;
   display: flex;
   align-items: center;
-  margin: 0 1rem;
+  margin: 0;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--white);
@@ -57,7 +73,7 @@
 
 .site-search input {
   width: 100%;
-  min-height: 46px;
+  min-height: 40px;
   border: 0;
   outline: 0;
   padding: 0 0.25rem 0 1.1rem;
@@ -65,11 +81,13 @@
   background: transparent;
   color: var(--ink);
   font: inherit;
+  font-size: 0.84rem;
 }
 
 .site-search button {
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
   margin-right: 2px;
   border: 0;
   border-radius: 999px;
@@ -154,7 +172,7 @@
   border-radius: 999px;
   background: var(--white);
   padding: 0.65rem 0.9rem;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .nav-links {
@@ -166,7 +184,11 @@
 .nav-links a {
   color: var(--muted);
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 400;
+}
+
+.nav-links a.active {
+  font-weight: 500;
 }
 
 .nav-links a:hover,
@@ -191,6 +213,7 @@
   background: var(--pink);
   color: var(--white);
   font-size: 0.78rem;
+  font-weight: 500;
 }
 
 .btn {

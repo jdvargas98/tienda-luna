@@ -22,7 +22,7 @@ import {
   updatePhotoUrl,
   updateQuantity,
 } from "./cart.js?v=20260823-product-route";
-import { loadShell, money, setActiveRoute, updateCartBadge } from "./ui.js?v=20261022-tienda-es";
+import { loadShell, money, setActiveRoute, updateCartBadge } from "./ui.js?v=20261022-menu-compacto";
 
 const routes = {
   "/": renderHome,
@@ -2222,4 +2222,3 @@ function renderStoreError(error) {
 }
 
 window.addEventListener("beforeunload", saveState);
-

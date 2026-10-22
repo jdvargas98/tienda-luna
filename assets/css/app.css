@@ -1,5 +1,5 @@
-@import url("./tokens.css?v=20261022-titulos");
-@import url("./components.css?v=20260824-lucide-categories");
+@import url("./tokens.css?v=20261022-tipografia-suave");
+@import url("./components.css?v=20261022-menu-compacto");
 
 .hero {
   width: min(1380px, calc(100% - 48px));
@@ -578,6 +578,18 @@
   padding: 2.7rem 0 0.5rem;
 }
 
+.page-head h1 {
+  font-size: clamp(1.85rem, 3.4vw, 3rem);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  margin-bottom: 1.25rem;
+}
+
+.page-head .eyebrow {
+  font-weight: 500;
+}
+
 .product-layout,
 .checkout-layout,
 .cart-layout,
@@ -784,12 +796,13 @@
   margin: 0 0 0.35rem;
   color: var(--muted);
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
 .cart-item__main h3 {
   margin-bottom: 0.55rem;
+  font-weight: 500;
 }
 
 .cart-item__config {
@@ -802,12 +815,12 @@
   border-radius: 8px;
   background: var(--pink-soft);
   color: var(--pink-deep);
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .cart-item__config small {
   color: var(--muted);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .cart-details {
@@ -826,7 +839,7 @@
 
 .cart-detail dt {
   color: var(--muted);
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .cart-detail dd {
@@ -837,7 +850,7 @@
 
 .cart-detail--ok dd {
   color: var(--pink-deep);
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .cart-detail--pending dd {
@@ -875,7 +888,7 @@
 .quantity-control span {
   min-width: 42px;
   text-align: center;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .cart-remove {
@@ -883,7 +896,7 @@
   background: transparent;
   color: var(--pink-deep);
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 4px;
 }
@@ -913,7 +926,7 @@
 .total-row.grand {
   border-bottom: 0;
   font-size: 1.2rem;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .cart-summary-note {
@@ -929,6 +942,17 @@
 .cart-summary-note span {
   color: var(--ink);
   font-size: 0.92rem;
+}
+
+.cart-layout .summary-panel h3,
+.cart-layout strong,
+.cart-layout .btn {
+  font-weight: 500;
+}
+
+.cart-layout .total-row.grand,
+.cart-layout .total-row.grand strong {
+  font-weight: 600;
 }
 
 .form-grid,
@@ -1051,6 +1075,15 @@
 
   .nav-shell {
     min-height: 64px;
+  }
+
+  .nav-shell > .nav-toggle {
+    margin-left: auto;
+  }
+
+  .nav-shell > .nav-links {
+    margin-right: 0;
+    gap: 0;
   }
 
   .site-search {
