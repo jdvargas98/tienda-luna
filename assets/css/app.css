@@ -4876,3 +4876,32 @@
     font-size: 0.8rem;
   }
 }
+
+.product-validation {
+  margin-bottom: 0.85rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #f4b8b2;
+  border-radius: 10px;
+  background: #fff0ee;
+  color: #8f241b;
+  font-size: 0.82rem;
+}
+
+.product-validation[hidden] {
+  display: none;
+}
+
+.field-required {
+  display: inline-block;
+  margin-left: 0.4rem;
+  color: var(--pink-deep);
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.pdp-panel [aria-invalid="true"] {
+  border-color: #d94a57;
+  background: #fff5f5;
+}

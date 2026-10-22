@@ -1142,6 +1142,7 @@ async function renderProduct() {
           ${renderPersonalizationFields(personalizationFields)}
         </div>
 
+        <div class="product-validation" id="productValidation" role="alert" tabindex="-1" hidden></div>
         <button class="btn primary full-width pdp-cta" type="button" id="addToCart">
           Agregar al carrito &mdash; ${money(selectedPrice)}
         </button>
@@ -1243,15 +1244,17 @@ function uploadIcon() {
 function renderPersonalizationFields(fields) {
   return fields
     .map((field) => {
+      const required = field.requerido === true || field.requerido === 1 || field.requerido === "1";
+      const label = `${escapeHtml(field.label)}${required ? ' <span class="field-required">Obligatorio</span>' : ""}`;
       if (field.tipo === "foto") {
         return `
           <div class="field">
-            <label class="field-sublabel" for="photoUpload">${field.label}</label>
+            <label class="field-sublabel" for="photoUpload">${label}</label>
             <p class="upload-help">Sube una imagen horizontal en buena resolución. Formatos permitidos: JPG, PNG o WebP. Peso máximo: 8 MB.</p>
             <label class="btn-upload" for="photoUpload">
               ${uploadIcon()} Subir foto
             </label>
-            <input id="photoUpload" data-field-code="${field.codigo}" type="file" accept="image/*" class="sr-only" ${field.requerido ? "required" : ""}>
+            <input id="photoUpload" data-field-code="${field.codigo}" type="file" accept="image/*" class="sr-only" ${required ? "required" : ""}>
             <p class="upload-status" id="uploadStatus">${state.personalization.photoUrl ? "Imagen cargada correctamente." : "Aún no has cargado una imagen."}</p>
           </div>
         `;
@@ -1260,8 +1263,8 @@ function renderPersonalizationFields(fields) {
       if (field.tipo === "texto") {
         return `
           <div class="field">
-            <label class="field-sublabel" for="field-${field.codigo}">${field.label}</label>
-            <input id="field-${field.codigo}" data-field-code="${field.codigo}" type="text" maxlength="120" value="${escapeHtml(state.personalization.values[field.codigo] || "")}" ${field.requerido ? "required" : ""}>
+            <label class="field-sublabel" for="field-${field.codigo}">${label}</label>
+            <input id="field-${field.codigo}" data-field-code="${field.codigo}" type="text" maxlength="120" value="${escapeHtml(state.personalization.values[field.codigo] || "")}" ${required ? "required" : ""}>
           </div>
         `;
       }
@@ -1270,8 +1273,8 @@ function renderPersonalizationFields(fields) {
         const current = state.personalization.values[field.codigo] || String(field.opciones[0]);
         return `
           <div class="field">
-            <label class="field-sublabel" for="field-${field.codigo}">${field.label}</label>
-            <select id="field-${field.codigo}" data-field-code="${field.codigo}" ${field.requerido ? "required" : ""}>
+            <label class="field-sublabel" for="field-${field.codigo}">${label}</label>
+            <select id="field-${field.codigo}" data-field-code="${field.codigo}" ${required ? "required" : ""}>
               ${field.opciones.map((option) => `<option value="${escapeHtml(String(option))}" ${String(option) === String(current) ? "selected" : ""}>${escapeHtml(String(option))}</option>`).join("")}
             </select>
           </div>
@@ -1347,10 +1350,40 @@ function bindProductEvents(product) {
     const eventName = field.tagName === "SELECT" ? "change" : "input";
     field.addEventListener(eventName, (event) => {
       updatePersonalizationValue(field.dataset.fieldCode, event.target.value);
+      if (String(event.target.value).trim()) {
+        field.removeAttribute("aria-invalid");
+        field.removeAttribute("aria-describedby");
+      }
     });
   });
 
   document.querySelector("#addToCart").addEventListener("click", () => {
+    const validation = document.querySelector("#productValidation");
+    const missing = (product.personalizaciones || []).filter((field) => {
+      const required = field.requerido === true || field.requerido === 1 || field.requerido === "1";
+      if (!required) return false;
+      if (field.tipo === "foto") {
+        return !(state.personalization.photoUrl && state.personalization.photoUploadId && state.personalization.photoUploadToken);
+      }
+      return !String(state.personalization.values?.[field.codigo] ?? "").trim();
+    });
+    if (missing.length) {
+      document.querySelectorAll("[data-field-code]").forEach((input) => {
+        const invalid = missing.some((field) => field.codigo === input.dataset.fieldCode);
+        input.setAttribute("aria-invalid", String(invalid));
+        if (invalid) input.setAttribute("aria-describedby", "productValidation");
+        else input.removeAttribute("aria-describedby");
+      });
+      validation.hidden = false;
+      validation.innerHTML = `<strong>Falta información obligatoria.</strong><ul>${missing.map((field) => `<li>${escapeHtml(field.tipo === "foto" ? "Carga " + field.label + "." : "Completa " + field.label + ".")}</li>`).join("")}</ul>`;
+      const first = document.querySelector(`[data-field-code="${CSS.escape(missing[0].codigo)}"]`);
+      const target = first?.type === "file" ? document.querySelector(".btn-upload") : first;
+      (target || validation).setAttribute("tabindex", "-1");
+      (target || validation).focus({ preventScroll: true });
+      (target || validation).scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    validation.hidden = true;
     addConfiguredProductToCart(product);
     updateCartBadge();
     navigate("/carrito");
