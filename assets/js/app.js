@@ -1063,6 +1063,8 @@ async function renderProduct() {
   const images = productImages(product);
   const mainImage = images[0] || "";
   const personalizationFields = product.personalizaciones || [];
+  const hasVariantChoices = pricingField ? pricingField.valores.length > 1 : variants.length > 1;
+  const acceptsPhoto = personalizationFields.some((field) => field.tipo === "foto");
 
   app.innerHTML = `
     <section class="pdp-layout">
@@ -1083,7 +1085,7 @@ async function renderProduct() {
           </div>
         </div>
 
-        <div class="pdp-photo-preview" aria-live="polite">
+        ${acceptsPhoto ? `<div class="pdp-photo-preview" aria-live="polite">
           <div class="pdp-photo-frame">
             <img id="previewPhoto" class="${hasPhoto ? "" : "is-hidden"}" src="${previewPhotoUrl}" alt="Vista previa de tu foto">
             <div id="previewEmpty" class="pdp-photo-empty ${hasPhoto ? "is-hidden" : ""}">
@@ -1092,7 +1094,7 @@ async function renderProduct() {
             </div>
             <div class="pdp-puzzle-overlay" aria-hidden="true"></div>
           </div>
-        </div>
+        </div>` : ""}
 
         <div class="pdp-info-card">
           <h3>Detalles del producto</h3>
@@ -1118,7 +1120,7 @@ async function renderProduct() {
           <span class="pdp-avail-badge">Disponible</span>
         </div>
 
-        <div class="pdp-section">
+        ${hasVariantChoices ? `<div class="pdp-section">
           <p class="pdp-section-label">
             <span class="pdp-step-num" aria-hidden="true">1</span>
             ${pricingField?.label || "Selecciona el tamano"}
@@ -1130,11 +1132,11 @@ async function renderProduct() {
                 : variants.map((v) => variantCard(v, basePrice)).join("")
             }
           </div>
-        </div>
+        </div>` : ""}
 
         <div class="pdp-section">
           <p class="pdp-section-label">
-            <span class="pdp-step-num" aria-hidden="true">2</span>
+            <span class="pdp-step-num" aria-hidden="true">${hasVariantChoices ? 2 : 1}</span>
             Personalización
           </p>
           ${renderPersonalizationFields(personalizationFields)}
@@ -2220,3 +2222,4 @@ function renderStoreError(error) {
 }
 
 window.addEventListener("beforeunload", saveState);
+
