@@ -1,4 +1,4 @@
-@import url("./tokens.css");
+@import url("./tokens.css?v=20261022-titulos");
 @import url("./components.css?v=20260824-lucide-categories");
 
 .hero {
@@ -388,7 +388,7 @@
 .launch-copy h2 {
   margin-bottom: 0.8rem;
   color: var(--white);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .launch-copy p {
@@ -1182,7 +1182,7 @@
   align-items: center;
   gap: 0.75rem;
   font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
   margin-bottom: 1.5rem;
 }
@@ -1288,7 +1288,7 @@
 
 .chk-summary > h3 {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
   margin-bottom: 1.2rem;
 }
 
@@ -1611,7 +1611,7 @@
 
 .trk-status-card__head h2 {
   font-size: 1.35rem;
-  font-weight: 800;
+  font-weight: 600;
   margin-bottom: 0.3rem;
 }
 
@@ -1729,7 +1729,7 @@
 
 .trk-activity h3 {
   font-size: 0.92rem;
-  font-weight: 800;
+  font-weight: 600;
   margin-bottom: 1.2rem;
 }
 
@@ -1857,7 +1857,7 @@
 
 .trk-support-card h3 {
   font-size: 0.92rem;
-  font-weight: 800;
+  font-weight: 600;
   margin-bottom: 0.45rem;
 }
 
@@ -2027,7 +2027,7 @@
 .home-hero h1 {
   max-width: 650px;
   font-size: clamp(2.5rem, 4.8vw, 4.65rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.03em;
   color: var(--ink);
@@ -3738,7 +3738,7 @@
 
 .pdp-info-card h3 {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
   margin-bottom: 0.5rem;
 }
 
@@ -3799,7 +3799,7 @@
 
 .pdp-panel h1 {
   font-size: clamp(1.35rem, 2vw, 1.85rem);
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 0.7rem;
   line-height: 1.18;
 }
