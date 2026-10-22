@@ -12,7 +12,7 @@ export function money(value) {
 export async function loadShell() {
   await Promise.all([
     injectPartial("#siteHeader", withBase("/components/header.html?v=20260824-lucide-categories")),
-    injectPartial("#siteFooter", withBase("/components/footer.html?v=20260824-lucide-categories")),
+    injectPartial("#siteFooter", withBase("/components/footer.html?v=20261022-tienda-es")),
   ]);
   bindNavigationMenu();
   updateCartBadge();
@@ -103,8 +103,8 @@ function fallbackPartial(selector) {
         <nav class="footer-column" aria-label="Pedidos">
           <h3>Pedidos</h3>
           <a href="${withBase("/carrito/")}" data-route="/carrito">Carrito</a>
-          <a href="${withBase("/checkout/")}" data-route="/checkout">Checkout</a>
-          <a href="${withBase("/seguimiento/")}" data-route="/seguimiento">Rastreo</a>
+          <a href="${withBase("/checkout/")}" data-route="/checkout">Finalizar compra</a>
+          <a href="${withBase("/seguimiento/")}" data-route="/seguimiento">Seguir mi pedido</a>
         </nav>
         <nav class="footer-column" aria-label="Empresas">
           <h3>Empresas</h3>
@@ -119,7 +119,7 @@ function fallbackPartial(selector) {
         </nav>
       </div>
       <div class="site-footer__bottom">
-        <span>Luna Creativa Colombia Copyright <span data-current-year></span></span>
+        <span>© <span data-current-year></span> Luna Creativa Colombia. Todos los derechos reservados.</span>
       </div>
     </footer>
     <a class="contact-float" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20un%20proyecto." target="_blank" rel="noreferrer" aria-label="Hablar con Luna Creativa por WhatsApp">

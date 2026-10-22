@@ -22,7 +22,7 @@ import {
   updatePhotoUrl,
   updateQuantity,
 } from "./cart.js?v=20260823-product-route";
-import { loadShell, money, setActiveRoute, updateCartBadge } from "./ui.js?v=20260824-lucide-categories";
+import { loadShell, money, setActiveRoute, updateCartBadge } from "./ui.js?v=20261022-tienda-es";
 
 const routes = {
   "/": renderHome,
@@ -216,7 +216,7 @@ async function renderHome() {
         <div class="home-hero__content">
           <p class="home-eyebrow">Publicidad · impresión · marca</p>
           <h1 id="home-title">Publicidad que hace <em>visible</em> tu negocio.</h1>
-          <p class="home-hero__desc">Diseñamos y producimos avisos 2D y 3D, impresión, corte láser, branding y personalizados para que tu marca se vea profesional en cada punto de contacto.</p>
+          <p class="home-hero__desc">Diseñamos y producimos avisos 2D y 3D, impresión, corte láser, identidad de marca y personalizados para que tu marca se vea profesional en cada punto de contacto.</p>
           <div class="home-hero__actions">
             <a class="btn primary" href="mailto:info@lunacreativa.com.co?subject=Quiero%20cotizar%20un%20proyecto%20de%20publicidad">Solicitar asesoría</a>
             <a class="btn btn--outline-white" href="${withBase("/catalogo/")}" data-route="/catalogo">Explorar catálogo</a>
@@ -247,7 +247,7 @@ async function renderHome() {
             <span>Avisos 2D y 3D</span>
             <span>Impresión</span>
             <span>Corte láser</span>
-            <span>Branding</span>
+            <span>Identidad de marca</span>
             <span>Personalizados</span>
             <span>Eventos</span>
           </div>
@@ -676,7 +676,7 @@ async function renderVisit() {
               <option value="Avisos 2D y 3D">Avisos 2D y 3D</option>
               <option value="Corte láser">Corte láser</option>
               <option value="Impresión">Impresión</option>
-              <option value="Branding">Branding</option>
+              <option value="Branding">Identidad de marca</option>
               <option value="Personalizados">Personalizados</option>
               <option value="Publicidad para eventos">Publicidad para eventos</option>
               <option value="Otro proyecto">Otro proyecto</option>
@@ -953,7 +953,7 @@ async function renderCatalog() {
     ${categoryBar()}
     <section class="section page-head">
       <h1>${searchQuery ? `Resultados para "${escapeHtml(searchQuery)}"` : selectedCategory ? selectedCategory.nombre : "Productos personalizados"}</h1>
-      <p>${searchQuery ? `${products.length} resultado${products.length === 1 ? "" : "s"} disponible${products.length === 1 ? "" : "s"}.` : selectedCategory ? `${products.length} producto${products.length === 1 ? "" : "s"} publicado${products.length === 1 ? "" : "s"} en esta categoria.` : "Elige una referencia, revisa variantes y prepara la personalizacion del pedido."}</p>
+      <p>${searchQuery ? `${products.length} resultado${products.length === 1 ? "" : "s"} disponible${products.length === 1 ? "" : "s"}.` : selectedCategory ? `${products.length} producto${products.length === 1 ? "" : "s"} publicado${products.length === 1 ? "" : "s"} en esta categoría.` : "Elige tu producto, personalízalo y agrégalo al carrito."}</p>
     </section>
     <section class="section catalog-grid" aria-label="Listado de productos">
       ${products.length ? products.map(productCard).join("") : emptyCatalogMarkup(selectedCategory)}
@@ -979,7 +979,7 @@ function productCard(product) {
       </a>
       <div class="product-card__body">
         <h3>${product.nombre}</h3>
-        <div class="rating"><span class="stars">★★★★★</span> Catalogo conectado</div>
+        <div class="rating"><span class="stars">★★★★★</span> Hecho para ti</div>
         <p class="price">Desde ${compareMarkup} <span class="sale-price">${money(price)}</span></p>
         <p class="muted">${product.descripcion_corta || product.categoria?.nombre || "Producto publicado"}</p>
         <a class="btn primary full-width product-cta" href="${withBase(detailPath)}" data-route="/producto">${product.permite_personalizacion ? "Personalizar" : "Ver detalle"}</a>
@@ -1024,7 +1024,7 @@ function emptyCatalogMarkup(category) {
     <div class="empty-state catalog-empty">
       <h3>No hay productos publicados${category ? ` en ${escapeHtml(category.nombre)}` : ""}.</h3>
       <p>Cuando el cotizador publique referencias para esta categoria, apareceran automaticamente aqui.</p>
-      <a class="btn secondary" href="${withBase("/catalogo/")}" data-route="/catalogo">Ver todo el catalogo</a>
+      <a class="btn secondary" href="${withBase("/catalogo/")}" data-route="/catalogo">Ver todo el catálogo</a>
     </div>
   `;
 }
@@ -1071,7 +1071,7 @@ async function renderProduct() {
           <div class="pdp-gallery__main">
             ${mainImage ? `<img id="galleryImage" src="${mainImage}" alt="${product.nombre}">` : placeholderMedia(product.nombre)}
           </div>
-          <div class="pdp-gallery__thumbs" aria-label="Galeria del producto">
+          <div class="pdp-gallery__thumbs" aria-label="Galería del producto">
             ${images
               .map(
                 (img, i) => `
@@ -1085,17 +1085,17 @@ async function renderProduct() {
 
         <div class="pdp-photo-preview" aria-live="polite">
           <div class="pdp-photo-frame">
-            <img id="previewPhoto" class="${hasPhoto ? "" : "is-hidden"}" src="${previewPhotoUrl}" alt="Preview de tu foto">
+            <img id="previewPhoto" class="${hasPhoto ? "" : "is-hidden"}" src="${previewPhotoUrl}" alt="Vista previa de tu foto">
             <div id="previewEmpty" class="pdp-photo-empty ${hasPhoto ? "is-hidden" : ""}">
               ${cameraIcon()}
-              <span>Tu foto aparecera aqui</span>
+              <span>Tu foto aparecerá aquí</span>
             </div>
             <div class="pdp-puzzle-overlay" aria-hidden="true"></div>
           </div>
         </div>
 
         <div class="pdp-info-card">
-          <h3>Curated Artistry</h3>
+          <h3>Detalles del producto</h3>
           <p>${product.descripcion_larga || product.descripcion_corta || ""}</p>
           <div class="pdp-features">
             <span class="pdp-feature-pill">
@@ -1111,7 +1111,7 @@ async function renderProduct() {
       </div>
 
       <aside class="pdp-panel sticky-panel">
-        <p class="pdp-edition-badge">Edicion Premium</p>
+        <p class="pdp-edition-badge">Producto personalizado</p>
         <h1>${product.nombre}</h1>
         <div class="pdp-price-row">
           <span class="pdp-price">${money(selectedPrice)}</span>
@@ -1135,7 +1135,7 @@ async function renderProduct() {
         <div class="pdp-section">
           <p class="pdp-section-label">
             <span class="pdp-step-num" aria-hidden="true">2</span>
-            Personalizacion
+            Personalización
           </p>
           ${renderPersonalizationFields(personalizationFields)}
         </div>
@@ -1245,12 +1245,12 @@ function renderPersonalizationFields(fields) {
         return `
           <div class="field">
             <label class="field-sublabel" for="photoUpload">${field.label}</label>
-            <p class="upload-help">Sube una imagen horizontal en buena resolucion. Formatos permitidos: JPG, PNG o WebP. Peso maximo: 8MB.</p>
+            <p class="upload-help">Sube una imagen horizontal en buena resolución. Formatos permitidos: JPG, PNG o WebP. Peso máximo: 8 MB.</p>
             <label class="btn-upload" for="photoUpload">
               ${uploadIcon()} Subir foto
             </label>
             <input id="photoUpload" data-field-code="${field.codigo}" type="file" accept="image/*" class="sr-only" ${field.requerido ? "required" : ""}>
-            <p class="upload-status" id="uploadStatus">${state.personalization.photoUrl ? "Imagen cargada correctamente." : "Aun no has cargado una imagen."}</p>
+            <p class="upload-status" id="uploadStatus">${state.personalization.photoUrl ? "Imagen cargada correctamente." : "Aún no has cargado una imagen."}</p>
           </div>
         `;
       }
@@ -1361,13 +1361,13 @@ function renderCart() {
     <section class="section page-head">
       <p class="eyebrow">Carrito</p>
       <h1>Revisa tu pedido personalizado.</h1>
-      <p>El carrito conserva la variante, la cantidad y el resumen de personalizacion que luego se enviara al backend.</p>
+      <p>Revisa las cantidades y la personalización de cada producto antes de continuar con tu compra.</p>
     </section>
     <section class="cart-layout">
       <div class="panel">${hasItems ? state.cart.map(cartItemMarkup).join("") : emptyCartMarkup()}</div>
       <aside class="summary-panel">
         ${summaryMarkup()}
-        <a class="btn primary full-width" href="${withBase("/checkout/")}" data-route="/checkout" ${hasItems ? "" : 'aria-disabled="true"'}>Continuar a checkout</a>
+        <a class="btn primary full-width" href="${withBase("/checkout/")}" data-route="/checkout" ${hasItems ? "" : 'aria-disabled="true"'}>Finalizar compra</a>
       </aside>
     </section>
   `;
@@ -1446,7 +1446,7 @@ function cartPersonalizationMarkup(item) {
 function emptyCartMarkup() {
   return `
     <div class="empty-state">
-      <h3>Tu carrito esta listo para empezar.</h3>
+      <h3>Tu carrito está vacío.</h3>
       <p>Explora el catálogo, elige un producto y prepara su personalización.</p>
       <a class="btn secondary" href="${withBase("/catalogo/")}" data-route="/catalogo">Explorar productos</a>
     </div>
@@ -1459,10 +1459,10 @@ function summaryMarkup() {
   return `
     <h3>Resumen del carrito</h3>
     <div class="total-row"><span>${totalQuantity} unidad${totalQuantity === 1 ? "" : "es"}</span><strong>${money(subtotal)}</strong></div>
-    <div class="total-row"><span>Envio</span><strong>Por confirmar</strong></div>
+    <div class="total-row"><span>Envío</span><strong>Por confirmar</strong></div>
     <div class="total-row grand"><span>Total estimado</span><strong>${money(subtotal)}</strong></div>
     <div class="cart-summary-note">
-      <strong>Incluye personalizacion</strong>
+      <strong>Incluye personalización</strong>
       <span>Foto, frase grabada y configuracion elegida quedaran asociadas al pedido.</span>
     </div>
     <p class="helper">El pago quedara conectado a Wompi en la integracion final.</p>
@@ -1519,7 +1519,7 @@ function renderCheckout() {
         <div class="chk-section">
           <h2 class="chk-section__title">
             <span class="chk-num">2</span>
-            Logistica de envio
+            Información de envío
           </h2>
           <div class="field">
             <label class="chk-label" for="address">Direccion principal <span class="required-mark">*</span></label>
@@ -1588,7 +1588,7 @@ function checkoutSummaryMarkup() {
     <div class="chk-breakdown">
       <div class="chk-row"><span>Subtotal</span><span>${money(subtotal)}</span></div>
       ${discount > 0 ? `<div class="chk-row chk-row--discount"><span>Descuento Bulk (15%)</span><span>-${money(discount)}</span></div>` : ""}
-      <div class="chk-row"><span>Envio</span><span>Por confirmar</span></div>
+      <div class="chk-row"><span>Envío</span><span>Por confirmar</span></div>
     </div>
     <div class="chk-total">
       <span>Total a pagar</span>
@@ -1598,7 +1598,7 @@ function checkoutSummaryMarkup() {
     <button class="chk-wompi-btn" type="submit" form="checkoutForm" ${hasItems ? "" : "disabled"}>
       ${wompiIcon()} Pagar con Wompi
     </button>
-    <p class="chk-ssl">Transaccion segura &mdash; Cifrado SSL 256-bit</p>
+    <p class="chk-ssl">Pago seguro con Wompi</p>
   `;
 }
 
@@ -1637,7 +1637,7 @@ function validateCheckoutForm(form) {
 
   const validations = [
     ["customerName", "Escribe tu nombre completo."],
-    ["email", "Escribe un correo valido."],
+    ["email", "Escribe un correo válido."],
     ["phone", "Escribe un celular colombiano de 10 digitos."],
     ["address", "Escribe la direccion principal."],
     ["department", "Selecciona el departamento."],
@@ -1723,12 +1723,12 @@ function renderConfirmation() {
     <section class="confirmation">
       <div class="panel">
         <p class="eyebrow">Pedido recibido</p>
-        <h1>Gracias. Tu pedido entro a confirmacion.</h1>
-        <p>Te enviaremos el codigo por correo para consultar el avance cuando quieras.</p>
+        <h1>Gracias por tu compra. Recibimos tu pedido.</h1>
+        <p>Te enviaremos el código por correo para consultar el estado de tu pedido cuando quieras.</p>
         ${code ? `<div class="order-code">${escapeHtml(code)}</div>` : ""}
         <div class="footer-actions">
           <a class="btn primary" href="${withBase("/seguimiento/")}" data-route="/seguimiento">Consultar seguimiento</a>
-          <a class="btn secondary" href="${withBase("/catalogo/")}" data-route="/catalogo">Volver al catalogo</a>
+          <a class="btn secondary" href="${withBase("/catalogo/")}" data-route="/catalogo">Seguir comprando</a>
         </div>
       </div>
     </section>
@@ -1747,7 +1747,7 @@ async function renderTracking() {
       <div class="trk-hero__inner">
         <p class="trk-hero__label">Ingresa tu codigo de seguimiento</p>
         <form class="trk-search" id="trackingForm">
-          <input id="trackingCode" class="trk-search__input" value="${escapeHtml(initialCode)}" placeholder="Codigo recibido por correo" required>
+          <input id="trackingCode" class="trk-search__input" value="${escapeHtml(initialCode)}" placeholder="Código recibido por correo" required>
           <button class="trk-search__btn" type="submit">Rastrear Pedido</button>
         </form>
       </div>
@@ -1849,7 +1849,7 @@ function trackingResultMarkup(order) {
         <div class="trk-status-card">
           <div class="trk-status-card__head">
             <div>
-              <h2>Estado del Envio</h2>
+              <h2>Estado del envío</h2>
               <p>Pedido #${escapeHtml(order.code)} &mdash; Luna Creativa</p>
             </div>
             <span class="trk-badge ${trkBadgeClass(order.statusIndex)}">${trkBadgeLabel(order.statusIndex)}</span>
@@ -1862,14 +1862,14 @@ function trackingResultMarkup(order) {
       <aside class="trk-right">
         <div class="trk-info-card">
           <div class="trk-info-card__head">
-            ${trkInfoIcon()} Informacion de Envio
+            ${trkInfoIcon()} Información de envío
           </div>
           <div class="trk-info-field">
             <span>Transportadora</span>
             <strong>${escapeHtml(order.carrier || "Por confirmar")}</strong>
           </div>
           <div class="trk-info-field">
-            <span>Guia</span>
+            <span>Guía</span>
             <strong>${escapeHtml(order.guide || "Por confirmar")}</strong>
           </div>
           <div class="trk-info-field">
@@ -1877,16 +1877,16 @@ function trackingResultMarkup(order) {
             <strong>${escapeHtml(order.city || "Por confirmar")}</strong>
           </div>
           <div class="trk-info-field">
-            <span>Direccion</span>
+            <span>Dirección</span>
             <strong>${escapeHtml(order.address || "Por confirmar")}</strong>
           </div>
           ${guideMarkup}
         </div>
 
         <div class="trk-support-card">
-          <h3>Necesitas ayuda?</h3>
-          <p>Si tienes dudas sobre tu fabricacion especial, nuestro equipo B2B esta listo para asistirte.</p>
-          <span class="trk-support-link">Contactar Soporte &rarr;</span>
+          <h3>¿Necesitas ayuda?</h3>
+          <p>Si tienes preguntas sobre tu pedido, nuestro equipo está listo para ayudarte.</p>
+          <span class="trk-support-link">Contactar soporte &rarr;</span>
         </div>
 
         <div class="trk-product-card">
@@ -2212,7 +2212,7 @@ function renderStoreError(error) {
     <section class="section">
       <div class="panel">
         <p class="eyebrow">Tienda publica</p>
-        <h1>No fue posible cargar el catalogo</h1>
+        <h1>No fue posible cargar el catálogo</h1>
         <p>${escapeHtml(error?.message || "Intenta nuevamente en unos minutos.")}</p>
       </div>
     </section>
