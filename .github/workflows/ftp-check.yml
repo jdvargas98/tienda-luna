@@ -1,0 +1,69 @@
+name: Comprobar FTP (solo lectura)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Conectar por FTPS y listar la carpeta inicial
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_HOME_DIR: ${{ secrets.FTP_HOME_DIR }}
+        shell: python
+        run: |
+          import ftplib
+          import json
+          import os
+          import ssl
+          import sys
+
+          required = ("FTP_SERVER", "FTP_USERNAME", "FTP_PASSWORD", "FTP_HOME_DIR")
+          missing = [key for key in required if not os.environ.get(key)]
+          if missing:
+              print("Faltan secretos: " + ", ".join(missing))
+              sys.exit(1)
+          if os.environ["FTP_USERNAME"] != "deploy-home@lunacreativa.com.co":
+              print("FTP_USERNAME no corresponde a la cuenta deploy-home de la web principal. Actualízalo sin modificar las cuentas de Cotizador.")
+              sys.exit(1)
+          if os.environ["FTP_HOME_DIR"] != "/":
+              print("Para esta comprobación, FTP_HOME_DIR debe contener únicamente /.")
+              sys.exit(1)
+
+          connection = ftplib.FTP_TLS(context=ssl.create_default_context(), timeout=25)
+          try:
+              connection.connect(os.environ["FTP_SERVER"], 21)
+              connection.login(os.environ["FTP_USERNAME"], os.environ["FTP_PASSWORD"])
+              connection.prot_p()
+              connection.set_pasv(True)
+              connection.cwd("/")
+              names = sorted(connection.nlst())
+              print("Conexión FTPS correcta. Listado de la carpeta inicial:")
+              for name in names:
+                  print("Archivo/carpeta: " + json.dumps(name, ensure_ascii=True))
+              basenames = {name.rstrip("/").rsplit("/", 1)[-1] for name in names}
+              if not {"index.html", "assets"}.issubset(basenames):
+                  print("ATENCIÓN: no aparecen index.html y assets juntos. Revisar el destino antes de publicar.")
+                  sys.exit(1)
+              print("El listado incluye index.html y assets, como la carpeta public_html mostrada en cPanel.")
+              print("Prueba terminada: no se subieron, descargaron, modificaron ni borraron archivos del servidor.")
+          except ssl.SSLCertVerificationError:
+              print("El certificado TLS del servidor no se pudo verificar. Confirma con el hosting el nombre FTPS correcto; no se desactiva la verificación.")
+              sys.exit(1)
+          except ftplib.error_perm as error:
+              code = str(error)[:3]
+              print("El servidor rechazó la autenticación o el listado. Código FTP: " + (code if code.isdigit() else "no disponible"))
+              print("Revisa que FTP_PASSWORD pertenezca a la cuenta deploy-home y que el servidor sea el indicado por cPanel.")
+              sys.exit(1)
+          except (OSError, ftplib.Error) as error:
+              print("No fue posible completar la conexión/listado. Tipo de error: " + type(error).__name__)
+              sys.exit(1)
+          finally:
+              connection.close()
