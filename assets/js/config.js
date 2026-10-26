@@ -1,4 +1,4 @@
-export const BASE_PATH = window.location.pathname.startsWith("/tienda") ? "/tienda" : "";
+export const BASE_PATH = /^\/tienda(?:\/|$)/.test(window.location.pathname) ? "/tienda" : "";
 
 export function withBase(path = "/") {
   if (path === "/") return BASE_PATH ? `${BASE_PATH}/` : "/";

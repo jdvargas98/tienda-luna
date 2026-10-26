@@ -1,5 +1,11 @@
-import { cartQuantity } from "./cart.js?v=20260823-product-route";
+import { cartQuantity } from "./cart.js?v=20260903-product-copy-v3";
 import { BASE_PATH, withBase } from "./config.js?v=20260823-product-route";
+import { footerTemplate } from "./footer-template.js?v=20261023-legal";
+import { bindFooterSubscription } from "./footer.js?v=20261023-footer";
+
+function resolvePartialUrls(html) {
+  return html.replaceAll("__BASE__", BASE_PATH).replaceAll("__HOME__", BASE_PATH);
+}
 
 export function money(value) {
   return new Intl.NumberFormat("es-CO", {
@@ -12,11 +18,12 @@ export function money(value) {
 export async function loadShell() {
   await Promise.all([
     injectPartial("#siteHeader", withBase("/components/header.html?v=20261022-menu-compacto")),
-    injectPartial("#siteFooter", withBase("/components/footer.html?v=20261022-tienda-es")),
+    injectPartial("#siteFooter", withBase("/components/footer.html?v=20261023-legal")),
   ]);
   bindNavigationMenu();
   updateCartBadge();
   updateFooterYear();
+  bindFooterSubscription(document.querySelector(".global-footer"));
 }
 
 export function updateCartBadge() {
@@ -54,7 +61,7 @@ async function injectPartial(selector, url) {
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`No se pudo cargar ${url}`);
-    target.innerHTML = (await response.text()).replaceAll("__BASE__", BASE_PATH);
+    target.innerHTML = resolvePartialUrls(await response.text());
   } catch {
     target.innerHTML = fallbackPartial(selector);
   }
@@ -89,44 +96,5 @@ function fallbackPartial(selector) {
     `;
   }
 
-  return `
-    <footer class="site-footer">
-      <div class="site-footer__inner">
-        <div class="footer-brand">
-          <a class="footer-logo" href="${withBase("/")}" data-route="/" aria-label="Luna Creativa tienda">
-            <img src="${withBase("/assets/img/logo/luna-creativa.png")}" alt="Logo Luna Creativa" width="46" height="46">
-            <span>Luna Creativa</span>
-          </a>
-          <p>Publicidad, impresión y soluciones personalizadas para hacer visible tu negocio.</p>
-        </div>
-        <nav class="footer-column" aria-label="Pedidos">
-          <h3>Pedidos</h3>
-          <a href="${withBase("/carrito/")}" data-route="/carrito">Carrito</a>
-          <a href="${withBase("/checkout/")}" data-route="/checkout">Finalizar compra</a>
-          <a href="${withBase("/seguimiento/")}" data-route="/seguimiento">Seguir mi pedido</a>
-        </nav>
-        <nav class="footer-column" aria-label="Empresas">
-          <h3>Empresas</h3>
-          <a href="${withBase("/servicios/")}" data-route="/servicios">Servicios</a>
-          <a href="${withBase("/catalogo/")}" data-route="/catalogo">Productos</a>
-          <a href="${withBase("/visita/")}" data-route="/visita">Agendar visita</a>
-          <a href="mailto:ventas@lunacreativa.com.co">Correo a Ventas</a>
-        </nav>
-        <nav class="footer-column" aria-label="Legal">
-          <h3>Legal</h3>
-          <a href="https://lunacreativa.com.co/legal/politica-privacidad.html" target="_blank" rel="noreferrer">Política de privacidad</a>
-        </nav>
-      </div>
-      <div class="site-footer__bottom">
-        <span>© <span data-current-year></span> Luna Creativa Colombia. Todos los derechos reservados.</span>
-      </div>
-    </footer>
-    <a class="contact-float" href="https://wa.me/573114512495?text=Hola%20Luna%20Creativa%2C%20quiero%20cotizar%20un%20proyecto." target="_blank" rel="noreferrer" aria-label="Hablar con Luna Creativa por WhatsApp">
-      <span class="contact-float__prompt">Hablemos ahora</span>
-      <span class="contact-float__button">
-        <img src="${withBase("/assets/img/icons/whatsapp.png")}" alt="" width="56" height="56" aria-hidden="true">
-        <span class="contact-float__status" aria-hidden="true"></span>
-      </span>
-    </a>
-  `;
+  return resolvePartialUrls(footerTemplate);
 }

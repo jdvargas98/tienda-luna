@@ -42,6 +42,10 @@ async function ensureUploadSession() {
   return uploadSessionPromise;
 }
 
+export async function getUploadSession() {
+  return ensureUploadSession();
+}
+
 export async function uploadPersonalizationFile(file, campo = "personalizacion", tiendaProductoId = 0) {
   const session = await ensureUploadSession();
   const formData = new FormData();
@@ -67,6 +71,14 @@ export async function fetchOrderTracking(code) {
     headers: {
       "Content-Type": "application/json",
     },
+  });
+}
+
+export async function createStoreOrder(payload) {
+  return fetchStoreJson(withBase("/api/crear_pedido.php"), {
+    method: "POST",
+    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/json" },
   });
 }
 

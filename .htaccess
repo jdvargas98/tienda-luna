@@ -1,4 +1,35 @@
 RewriteEngine On
+Options -Indexes
+DirectoryIndex index.html index.php
+
+# Otras aplicaciones del alojamiento: nunca pasan por el router comercial.
+RewriteRule ^(?:cotizador|cotizador-pruebas|landing-rompe|\.well-known|cgi-bin)(?:/|$) - [L]
+
+# Conservar el dominio canónico que ya utilizaba el Home publicado.
+RewriteCond %{HTTP_HOST} ^(?:www\.)?lunacreativa\.com\.co$ [NC]
+RewriteCond %{THE_REQUEST} \s/+(.*/)?index\.html(?:[\s?]) [NC]
+RewriteRule ^(.*/)?index\.html$ https://lunacreativa.com.co/$1 [R=301,L,NE]
+RewriteCond %{HTTP_HOST} ^(?:www\.)?lunacreativa\.com\.co$ [NC]
+RewriteCond %{HTTPS} !=on [OR]
+RewriteCond %{HTTP_HOST} ^www\.lunacreativa\.com\.co$ [NC]
+RewriteRule ^ https://lunacreativa.com.co%{REQUEST_URI} [R=301,L,NE]
+
+# Migración inicial reversible. Cambiar 302 a 301 solo después de verificarla.
+# Solo GET/HEAD: no redirigir formularios o peticiones POST hacia otro endpoint.
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^tienda/?$ / [R=302,L]
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^tienda/(catalogo|producto|carrito|checkout|visita|seguimiento|servicios|legal)(/.*)?$ /$1$2 [R=302,L]
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^views/empresas/?$ /servicios/ [R=302,L]
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^views/visita/?$ /visita/ [R=302,L]
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^views/contacto/?$ /legal/contacto.html [R=302,L]
+
+# No exponer documentos internos ni artefactos de desarrollo.
+RewriteRule ^(?:docs|scripts|tests|catalogo/borradores)(?:/|$) - [F,L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . index.html [L]
+RewriteRule ^(?:servicios|catalogo|producto|carrito|checkout|visita|seguimiento|confirmacion)/?$ index.html [L]

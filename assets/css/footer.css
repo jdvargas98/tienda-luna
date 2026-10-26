@@ -1,0 +1,313 @@
+/* Pie global: información, legal, contacto, novedades y medios de pago. */
+.global-footer {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  color: #f5f2f4;
+  background: #29262a;
+  border-top: 1px solid #383439;
+}
+
+.global-footer a { color: inherit; }
+
+.global-footer__main,
+.global-footer__payments,
+.global-footer__bottom {
+  width: min(1400px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.global-footer__main {
+  padding: clamp(58px, 7vw, 92px) 0 clamp(48px, 6vw, 76px);
+  display: grid;
+  grid-template-columns: minmax(250px, 1.2fr) minmax(145px, 0.62fr) minmax(190px, 0.78fr) minmax(290px, 1.25fr);
+  gap: clamp(34px, 5vw, 76px);
+}
+
+.global-footer__logo {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.global-footer__logo img {
+  padding: 3px;
+  border-radius: 15px;
+  background: #fff;
+}
+
+.global-footer__logo span {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.global-footer__brand > p {
+  max-width: 340px;
+  margin: 24px 0 0;
+  color: #b9b3b8;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.global-footer__brand address {
+  margin-top: 25px;
+  color: #b9b3b8;
+  font-size: 0.76rem;
+  font-style: normal;
+  line-height: 1.7;
+}
+
+.global-footer__brand address strong { color: #f5f2f4; font-weight: 600; }
+
+.global-footer__direct {
+  margin-top: 18px;
+  display: grid;
+  gap: 7px;
+  color: #c6c0c5;
+  font-size: 0.72rem;
+}
+
+.global-footer__direct a:hover,
+.global-footer__nav a:hover,
+.global-footer__bottom a:hover { color: #e6007e; }
+
+.global-footer__nav { display: flex; flex-direction: column; align-items: flex-start; gap: 13px; }
+
+.global-footer__nav h2,
+.global-footer__newsletter h2 {
+  margin: 0 0 9px;
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.global-footer__nav h2 { font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.global-footer__nav a {
+  color: #bbb5ba;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  transition: color 0.18s ease;
+}
+
+.global-footer__eyebrow {
+  margin: 0 0 10px;
+  color: #e6007e;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.global-footer__newsletter h2 { max-width: 390px; font-size: clamp(1.35rem, 2vw, 1.85rem); }
+
+.global-footer__newsletter > p:not(.global-footer__eyebrow) {
+  max-width: 390px;
+  margin: 12px 0 0;
+  color: #b9b3b8;
+  font-size: 0.76rem;
+  line-height: 1.6;
+}
+
+.global-footer__form { margin-top: 22px; }
+
+.global-footer__field {
+  height: 50px;
+  display: grid;
+  grid-template-columns: 1fr 50px;
+  overflow: hidden;
+  border: 1px solid #cbc7ca;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.global-footer__field:focus-within {
+  border-color: #e6007e;
+  box-shadow: 0 0 0 3px rgba(230, 0, 126, 0.1);
+}
+
+.global-footer__field input {
+  width: 100%;
+  min-width: 0;
+  padding: 0 15px;
+  border: 0;
+  outline: 0;
+  color: #272328;
+  background: transparent;
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.global-footer__field button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: #fff;
+  background: #1b181c;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.global-footer__field button:hover { background: #e6007e; }
+.global-footer__field button:disabled { cursor: wait; opacity: 0.58; }
+.global-footer__field button > span { display: none; }
+.global-footer__field button::before { content: "→"; font-size: 1.15rem; line-height: 1; }
+
+.global-footer__consent {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 15px 1fr;
+  align-items: start;
+  gap: 9px;
+  color: #aaa4a9;
+  font-size: 0.61rem;
+  line-height: 1.55;
+  cursor: pointer;
+}
+
+.global-footer__consent input { width: 14px; height: 14px; margin: 2px 0 0; accent-color: #e6007e; }
+.global-footer__consent a { color: #d7d2d6; text-decoration: underline; text-underline-offset: 2px; }
+.global-footer__trap { position: absolute; left: -10000px; width: 1px; height: 1px; opacity: 0; }
+
+.global-footer__status {
+  margin: 12px 0 0;
+  padding: 9px 11px;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.global-footer__status--success { color: #17653a; background: #dff6e8; }
+.global-footer__status--error { color: #912b3d; background: #fbe4e9; }
+
+.global-footer__payments {
+  min-height: 90px;
+  padding: 22px 0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 28px;
+  border-top: 1px solid #454046;
+  border-bottom: 1px solid #454046;
+}
+
+.global-footer__payments > span {
+  color: #c6c0c5;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.global-footer__payments ul {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  list-style: none;
+}
+
+.payment-mark {
+  min-height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #d2ced1;
+  border-radius: 5px;
+  color: #363137;
+  background: #f8f7f8;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.payment-mark--visa { color: #172b85; font-size: 0.78rem; font-style: italic; letter-spacing: -0.06em; }
+.payment-mark--pse { color: #175eb6; }
+.payment-mark--wompi { color: #5b257f; }
+.payment-mark--mastercard i { position: relative; width: 23px; height: 14px; }
+.payment-mark--mastercard i::before,
+.payment-mark--mastercard i::after { content: ""; position: absolute; top: 1px; width: 12px; height: 12px; border-radius: 50%; }
+.payment-mark--mastercard i::before { left: 1px; background: #e63826; }
+.payment-mark--mastercard i::after { right: 1px; background: rgba(244, 158, 24, 0.88); }
+.payment-mark--mastercard b { font-size: 0.58rem; font-weight: 500; }
+
+.global-footer__payments > p {
+  margin: 0;
+  color: #aaa4a9;
+  font-size: 0.64rem;
+}
+
+.global-footer__bottom {
+  min-height: 76px;
+  padding: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  color: #aaa4a9;
+  font-size: 0.65rem;
+}
+
+.global-footer__bottom p { margin: 0; }
+.global-footer__bottom div { display: flex; gap: 22px; }
+.global-footer__bottom a { transition: color 0.18s ease; }
+
+.global-footer .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 1050px) {
+  .global-footer__main { grid-template-columns: 1.2fr 0.8fr 1.2fr; }
+  .global-footer__newsletter { grid-column: 1 / -1; max-width: 560px; padding-top: 14px; }
+}
+
+@media (max-width: 720px) {
+  .global-footer__main,
+  .global-footer__payments,
+  .global-footer__bottom { width: min(100%, calc(100% - 32px)); }
+  .global-footer__main { grid-template-columns: 1fr 1fr; }
+  .global-footer__brand,
+  .global-footer__newsletter { grid-column: 1 / -1; }
+  .global-footer__payments { grid-template-columns: 1fr; gap: 14px; }
+  .global-footer__payments ul { flex-wrap: wrap; }
+  .global-footer__payments > p { display: none; }
+}
+
+@media (max-width: 480px) {
+  .global-footer__main,
+  .global-footer__payments,
+  .global-footer__bottom { width: min(100%, calc(100% - 24px)); }
+  .global-footer__main { grid-template-columns: 1fr; padding-top: 48px; }
+  .global-footer__brand,
+  .global-footer__newsletter { grid-column: auto; }
+  .global-footer__nav { padding-top: 28px; border-top: 1px solid #454046; }
+  .global-footer__bottom { align-items: flex-start; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .global-footer__field button,
+  .global-footer__direct a,
+  .global-footer__nav a,
+  .global-footer__bottom a { transition: none; }
+}
+
+.global-footer .payment-mark--wompi { padding: 0 4px; overflow: hidden; }
+.global-footer .payment-mark--wompi img { width: 72px; height: 24px; object-fit: cover; }
+.global-footer__main > * { min-width: 0; }
+.global-footer__direct a { overflow-wrap: anywhere; }
+.global-footer__newsletter h2, .global-footer__nav h2 { color: #fff; }

@@ -4,15 +4,20 @@ import {
   fetchColombiaDepartments,
   fetchOrderTracking,
   fetchProductDetail,
+  createStoreOrder,
   requestVisit,
   uploadPersonalizationFile,
-} from "./data.js?v=20260823-product-route";
+} from "./data.js?v=20260903-product-copy-v3";
 import { BASE_PATH, withBase } from "./config.js?v=20260823-product-route";
 import {
+  activePersonalization,
+  activeVariant,
   addConfiguredProductToCart,
   cartQuantity,
   cartSubtotal,
+  checkoutCartItems,
   createOrder,
+  editingCartItemId,
   hydrateProductState,
   removeCartItem,
   saveState,
@@ -21,8 +26,10 @@ import {
   updatePersonalizationValue,
   updatePhotoUrl,
   updateQuantity,
-} from "./cart.js?v=20260823-product-route";
-import { loadShell, money, setActiveRoute, updateCartBadge } from "./ui.js?v=20261022-menu-compacto";
+  validateActiveConfiguration,
+} from "./cart.js?v=20260903-product-copy-v3";
+import { loadShell, money, setActiveRoute, updateCartBadge } from "./ui.js?v=20261023-legal";
+import { bindProductGallery } from "./product-gallery.js?v=20261022-solo-deslizar";
 
 const routes = {
   "/": renderHome,
@@ -42,6 +49,7 @@ const storefront = {
   product: null,
   productSlug: "",
 };
+let preparedCheckoutOrder = null;
 
 const serviceCatalog = [
   {
@@ -701,7 +709,7 @@ async function renderVisit() {
             </label>
             <label>
               <input name="privacy_accepted" type="checkbox" value="yes" required>
-              <span>Autorizo el tratamiento de mis datos para gestionar esta solicitud según la <a href="https://lunacreativa.com.co/legal/politica-privacidad.html" target="_blank" rel="noreferrer">Política de Privacidad</a>.</span>
+              <span>Autorizo el tratamiento de mis datos para gestionar esta solicitud según la <a href="${withBase("/legal/politica-privacidad.html")}" target="_blank" rel="noreferrer">Política de Privacidad</a>.</span>
             </label>
           </div>
           <div class="visit-form__footer visit-form__wide">
@@ -953,7 +961,7 @@ async function renderCatalog() {
     ${categoryBar()}
     <section class="section page-head">
       <h1>${searchQuery ? `Resultados para "${escapeHtml(searchQuery)}"` : selectedCategory ? selectedCategory.nombre : "Productos personalizados"}</h1>
-      <p>${searchQuery ? `${products.length} resultado${products.length === 1 ? "" : "s"} disponible${products.length === 1 ? "" : "s"}.` : selectedCategory ? `${products.length} producto${products.length === 1 ? "" : "s"} publicado${products.length === 1 ? "" : "s"} en esta categoría.` : "Elige tu producto, personalízalo y agrégalo al carrito."}</p>
+      <p>${searchQuery ? `${products.length} resultado${products.length === 1 ? "" : "s"} disponible${products.length === 1 ? "" : "s"}.` : selectedCategory ? `${products.length} producto${products.length === 1 ? "" : "s"} en esta categoría.` : "Elige tu producto, personalízalo y agrégalo al carrito."}</p>
     </section>
     <section class="section catalog-grid" aria-label="Listado de productos">
       ${products.length ? products.map(productCard).join("") : emptyCatalogMarkup(selectedCategory)}
@@ -979,9 +987,8 @@ function productCard(product) {
       </a>
       <div class="product-card__body">
         <h3>${product.nombre}</h3>
-        <div class="rating"><span class="stars">★★★★★</span> Hecho para ti</div>
         <p class="price">Desde ${compareMarkup} <span class="sale-price">${money(price)}</span></p>
-        <p class="muted">${product.descripcion_corta || product.categoria?.nombre || "Producto publicado"}</p>
+        <p class="muted product-card__description">${product.descripcion_corta || product.categoria?.nombre || "Producto publicado"}</p>
         <a class="btn primary full-width product-cta" href="${withBase(detailPath)}" data-route="/producto">${product.permite_personalizacion ? "Personalizar" : "Ver detalle"}</a>
       </div>
     </article>
@@ -1052,19 +1059,26 @@ function swatchClass(color) {
 
 async function renderProduct() {
   const product = await ensurePrimaryProduct();
-  hydrateProductState(product);
+  hydrateProductState(product, requestedEditCartItemId());
 
   const pricingField = primaryPricingField(product);
   const variants = product.variantes || [];
   const basePrice = Number(pricingField?.valores?.[0]?.precio || variants[0]?.precio || product.precio_base || 0);
   const selectedPrice = currentProductPrice(product);
-  const hasPhoto = !!state.personalization.photoUrl;
-  const previewPhotoUrl = resolveMediaUrl(state.personalization.photoUrl || "");
+  const personalization = activePersonalization();
+  const hasPhoto = !!personalization.photoUrl;
+  const previewPhotoUrl = resolveMediaUrl(personalization.photoUrl || "");
   const images = productImages(product);
   const mainImage = images[0] || "";
-  const personalizationFields = product.personalizaciones || [];
+  const personalizationFields = [...(product.personalizaciones || [])].sort((a, b) => {
+    const aPhoto = a.tipo === "foto" ? 1 : 0;
+    const bPhoto = b.tipo === "foto" ? 1 : 0;
+    return aPhoto - bPhoto || Number(a.orden || 0) - Number(b.orden || 0) || Number(a.id || 0) - Number(b.id || 0);
+  });
+  const isEditing = !!editingCartItemId();
   const hasVariantChoices = pricingField ? pricingField.valores.length > 1 : variants.length > 1;
   const acceptsPhoto = personalizationFields.some((field) => field.tipo === "foto");
+  const personalizationStep = hasVariantChoices ? 2 : 1;
 
   app.innerHTML = `
     <section class="pdp-layout">
@@ -1102,17 +1116,18 @@ async function renderProduct() {
           <div class="pdp-features">
             <span class="pdp-feature-pill">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9V7a5 5 0 0 1 10 0v2"/><rect x="2" y="9" width="20" height="13" rx="2"/><circle cx="12" cy="16" r="1"/></svg>
-              MDF Sustentable
+              MDF sostenible
             </span>
             <span class="pdp-feature-pill">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-              Corte laser de alta precision
+              Corte láser de alta precisión
             </span>
           </div>
         </div>
       </div>
 
       <aside class="pdp-panel sticky-panel">
+        ${isEditing ? `<p class="pdp-editing-note">Editando este producto del carrito</p>` : ""}
         <p class="pdp-edition-badge">Producto personalizado</p>
         <h1>${product.nombre}</h1>
         <div class="pdp-price-row">
@@ -1120,41 +1135,46 @@ async function renderProduct() {
           <span class="pdp-avail-badge">Disponible</span>
         </div>
 
-        ${hasVariantChoices ? `<div class="pdp-section">
-          <p class="pdp-section-label">
-            <span class="pdp-step-num" aria-hidden="true">1</span>
-            ${pricingField?.label || "Selecciona el tamano"}
-          </p>
-          <div class="pdp-variants">
-            ${
-              pricingField
-                ? pricingField.valores.map((option) => pricingOptionCard(pricingField, option, basePrice)).join("")
-                : variants.map((v) => variantCard(v, basePrice)).join("")
-            }
-          </div>
-        </div>` : ""}
+        ${
+          hasVariantChoices
+            ? `<div class="pdp-section">
+                <p class="pdp-section-label">
+                  <span class="pdp-step-num" aria-hidden="true">1</span>
+                  ${pricingField?.label || "Selecciona la variante"}
+                </p>
+                <div class="pdp-variants">
+                  ${
+                    pricingField
+                      ? pricingField.valores.map((option) => pricingOptionCard(pricingField, option, basePrice)).join("")
+                      : variants.map((v) => variantCard(v, basePrice)).join("")
+                  }
+                </div>
+              </div>`
+            : ""
+        }
 
         <div class="pdp-section">
           <p class="pdp-section-label">
-            <span class="pdp-step-num" aria-hidden="true">${hasVariantChoices ? 2 : 1}</span>
+            <span class="pdp-step-num" aria-hidden="true">${personalizationStep}</span>
             Personalización
           </p>
-          ${renderPersonalizationFields(personalizationFields)}
+          ${renderPersonalizationFields(personalizationFields, personalization)}
         </div>
 
         <div class="product-validation" id="productValidation" role="alert" tabindex="-1" hidden></div>
         <button class="btn primary full-width pdp-cta" type="button" id="addToCart">
-          Agregar al carrito &mdash; ${money(selectedPrice)}
+          ${isEditing ? "Guardar cambios" : "Agregar al carrito"} &mdash; ${money(selectedPrice)}
         </button>
       </aside>
     </section>
   `;
   bindProductEvents(product);
+  bindProductGallery(app);
 }
 
 function variantCard(variant, basePrice) {
   const currentPrice = Number(variant.precio || 0);
-  const isActive = String(variant.id) === String(state.selectedVariant?.id);
+  const isActive = String(variant.id) === String(activeVariant()?.id);
   const delta = currentPrice - basePrice;
   return `
     <button class="pdp-variant ${isActive ? "active" : ""}" type="button" data-variant="${variant.id}">
@@ -1174,7 +1194,7 @@ function variantCard(variant, basePrice) {
 }
 
 function pricingOptionCard(field, option, basePrice) {
-  const currentValue = String(state.personalization.values[field.codigo] || field.valores?.[0]?.valor || "");
+  const currentValue = String(activePersonalization().values[field.codigo] || field.valores?.[0]?.valor || "");
   const isActive = String(option.valor) === currentValue;
   const currentPrice = Number(option.precio || 0);
   const delta = currentPrice - basePrice;
@@ -1241,11 +1261,11 @@ function uploadIcon() {
   </svg>`;
 }
 
-function renderPersonalizationFields(fields) {
+function renderPersonalizationFields(fields, personalization = activePersonalization()) {
   return fields
     .map((field) => {
       const required = field.requerido === true || field.requerido === 1 || field.requerido === "1";
-      const label = `${escapeHtml(field.label)}${required ? ' <span class="field-required">Obligatorio</span>' : ""}`;
+      const label = `${escapeHtml(personalizationFieldLabel(field))}${required ? ' <span class="field-required">Obligatorio</span>' : ""}`;
       if (field.tipo === "foto") {
         return `
           <div class="field">
@@ -1255,22 +1275,27 @@ function renderPersonalizationFields(fields) {
               ${uploadIcon()} Subir foto
             </label>
             <input id="photoUpload" data-field-code="${field.codigo}" type="file" accept="image/*" class="sr-only" ${required ? "required" : ""}>
-            <p class="upload-status" id="uploadStatus">${state.personalization.photoUrl ? "Imagen cargada correctamente." : "Aún no has cargado una imagen."}</p>
+            <p class="upload-status" id="uploadStatus">${personalization.photoUrl ? "Imagen cargada correctamente." : "Aún no has cargado una imagen."}</p>
           </div>
         `;
       }
 
       if (field.tipo === "texto") {
+        const maxLength = personalizationTextLimit(field);
+        const value = String(personalization.values[field.codigo] || "").slice(0, maxLength);
         return `
           <div class="field">
-            <label class="field-sublabel" for="field-${field.codigo}">${label}</label>
-            <input id="field-${field.codigo}" data-field-code="${field.codigo}" type="text" maxlength="120" value="${escapeHtml(state.personalization.values[field.codigo] || "")}" ${required ? "required" : ""}>
+            <div class="field-heading">
+              <label class="field-sublabel" for="field-${field.codigo}">${label}</label>
+              <span class="field-counter" data-counter-for="${field.codigo}">${value.length}/${maxLength}</span>
+            </div>
+            <input id="field-${field.codigo}" data-field-code="${field.codigo}" data-character-limit="${maxLength}" type="text" maxlength="${maxLength}" value="${escapeHtml(value)}" ${required ? "required" : ""}>
           </div>
         `;
       }
 
       if ((field.tipo === "select" || field.tipo === "opciones") && Array.isArray(field.opciones) && field.opciones.length > 0) {
-        const current = state.personalization.values[field.codigo] || String(field.opciones[0]);
+        const current = personalization.values[field.codigo] || String(field.opciones[0]);
         return `
           <div class="field">
             <label class="field-sublabel" for="field-${field.codigo}">${label}</label>
@@ -1284,6 +1309,17 @@ function renderPersonalizationFields(fields) {
       return "";
     })
     .join("");
+}
+
+function personalizationFieldLabel(field) {
+  if (field.codigo === "fecha-o-mensaje") return "Mensaje, dedicatoria o fecha";
+  return field.label;
+}
+
+function personalizationTextLimit(field) {
+  if (field.codigo === "titulo-de-la-tapa") return 20;
+  if (field.codigo === "fecha-o-mensaje") return 60;
+  return 120;
 }
 
 function bindProductEvents(product) {
@@ -1335,7 +1371,7 @@ function bindProductEvents(product) {
       uploadStatus.textContent = "Imagen cargada correctamente.";
       uploadStatus.classList.add("upload-status--success");
     } catch (error) {
-      updatePhotoUrl("");
+      updatePhotoUrl("", { fieldCode: event.target.dataset.fieldCode || "" });
       previewPhoto.classList.add("is-hidden");
       previewEmpty?.classList.remove("is-hidden");
       uploadStatus.textContent = error.message || "No fue posible subir la imagen.";
@@ -1350,37 +1386,38 @@ function bindProductEvents(product) {
     const eventName = field.tagName === "SELECT" ? "change" : "input";
     field.addEventListener(eventName, (event) => {
       updatePersonalizationValue(field.dataset.fieldCode, event.target.value);
-      if (String(event.target.value).trim()) {
+      if (event.target.value.trim()) {
         field.removeAttribute("aria-invalid");
         field.removeAttribute("aria-describedby");
+      }
+      const counter = document.querySelector(`[data-counter-for="${CSS.escape(field.dataset.fieldCode)}"]`);
+      if (counter && field.dataset.characterLimit) {
+        counter.textContent = `${event.target.value.length}/${field.dataset.characterLimit}`;
       }
     });
   });
 
   document.querySelector("#addToCart").addEventListener("click", () => {
+    const errors = validateActiveConfiguration(product);
     const validation = document.querySelector("#productValidation");
-    const missing = (product.personalizaciones || []).filter((field) => {
-      const required = field.requerido === true || field.requerido === 1 || field.requerido === "1";
-      if (!required) return false;
-      if (field.tipo === "foto") {
-        return !(state.personalization.photoUrl && state.personalization.photoUploadId && state.personalization.photoUploadToken);
-      }
-      return !String(state.personalization.values?.[field.codigo] ?? "").trim();
-    });
-    if (missing.length) {
-      document.querySelectorAll("[data-field-code]").forEach((input) => {
-        const invalid = missing.some((field) => field.codigo === input.dataset.fieldCode);
-        input.setAttribute("aria-invalid", String(invalid));
-        if (invalid) input.setAttribute("aria-describedby", "productValidation");
-        else input.removeAttribute("aria-describedby");
+    if (errors.length) {
+      let firstInvalid = null;
+      document.querySelectorAll("[data-field-code][required]").forEach((field) => {
+        const missing = field.type === "file"
+          ? !activePersonalization().photoUploadId
+          : !String(field.value).trim();
+        field.setAttribute("aria-invalid", String(missing));
+        if (missing) {
+          field.setAttribute("aria-describedby", "productValidation");
+          firstInvalid ||= field.type === "file" ? document.querySelector('.btn-upload[for="photoUpload"]') : field;
+        }
       });
       validation.hidden = false;
-      validation.innerHTML = `<strong>Falta información obligatoria.</strong><ul>${missing.map((field) => `<li>${escapeHtml(field.tipo === "foto" ? "Carga " + field.label + "." : "Completa " + field.label + ".")}</li>`).join("")}</ul>`;
-      const first = document.querySelector(`[data-field-code="${CSS.escape(missing[0].codigo)}"]`);
-      const target = first?.type === "file" ? document.querySelector(".btn-upload") : first;
-      (target || validation).setAttribute("tabindex", "-1");
-      (target || validation).focus({ preventScroll: true });
-      (target || validation).scrollIntoView({ behavior: "smooth", block: "center" });
+      validation.innerHTML = `<strong>Falta información obligatoria.</strong><ul>${errors.map((error) => `<li>${escapeHtml(error)}</li>`).join("")}</ul>`;
+      const target = firstInvalid || validation;
+      target.setAttribute("tabindex", "-1");
+      target.focus({ preventScroll: true });
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     validation.hidden = true;
@@ -1412,8 +1449,9 @@ function renderCart() {
 function cartItemMarkup(item) {
   const image = resolveMediaUrl(item.personalization.photoUrl || item.image || "");
   const itemSubtotal = item.unitPrice * item.quantity;
+  const editPath = `/producto/?slug=${encodeURIComponent(item.productSlug)}&editar=${encodeURIComponent(item.id)}`;
   return `
-    <article class="cart-item">
+    <article class="cart-item" data-cart-item="${escapeHtml(item.id)}">
       <div class="cart-item__media">
         ${image ? `<img src="${image}" alt="${escapeHtml(item.productName)}">` : `<div class="cart-item__placeholder">${placeholderMedia(item.productName)}</div>`}
       </div>
@@ -1421,20 +1459,23 @@ function cartItemMarkup(item) {
         <p class="cart-item__eyebrow">Producto personalizado</p>
         <h3>${escapeHtml(item.productName)}</h3>
         <div class="cart-item__config">
-          <span>${escapeHtml(item.variant.label || "Configuracion seleccionada")}</span>
-          ${item.variant.size ? `<small>${escapeHtml(item.variant.size)}</small>` : ""}
+          <span>${escapeHtml(item.variant?.label || "Configuración seleccionada")}</span>
+          ${item.variant?.size ? `<small>${escapeHtml(item.variant.size)}</small>` : ""}
         </div>
         ${cartPersonalizationMarkup(item)}
+        <div class="cart-item__actions">
+          <a href="${withBase(editPath)}" data-route="/producto" class="cart-action">Editar diseño</a>
+        </div>
       </div>
       <div class="cart-item__totals">
         <p class="cart-item__price-label">Precio unitario</p>
         <strong class="cart-item__unit">${money(item.unitPrice)}</strong>
         <div class="quantity-control" aria-label="Cantidad">
-          <button type="button" data-quantity="-1">-</button>
+          <button type="button" data-item-id="${escapeHtml(item.id)}" data-quantity="-1" aria-label="Reducir cantidad">-</button>
           <span>${item.quantity}</span>
-          <button type="button" data-quantity="1">+</button>
+          <button type="button" data-item-id="${escapeHtml(item.id)}" data-quantity="1" aria-label="Aumentar cantidad">+</button>
         </div>
-        <button class="cart-remove" type="button" data-remove-item>Eliminar</button>
+        <button class="cart-remove" type="button" data-remove-item="${escapeHtml(item.id)}">Eliminar</button>
         <div class="cart-item__subtotal">
           <span>Subtotal</span>
           <strong>${money(itemSubtotal)}</strong>
@@ -1497,27 +1538,30 @@ function summaryMarkup() {
     <div class="total-row"><span>Envío</span><strong>Por confirmar</strong></div>
     <div class="total-row grand"><span>Total estimado</span><strong>${money(subtotal)}</strong></div>
     <div class="cart-summary-note">
-      <strong>Incluye personalización</strong>
-      <span>Foto, frase grabada y configuracion elegida quedaran asociadas al pedido.</span>
+      <strong>Tu personalización viaja con el pedido</strong>
+      <span>Guardamos por separado la foto, los textos y las opciones elegidas para cada producto.</span>
     </div>
-    <p class="helper">El pago quedara conectado a Wompi en la integracion final.</p>
+    <p class="helper">Pago seguro procesado por Wompi.</p>
   `;
 }
 
 function bindCartEvents() {
   document.querySelectorAll("[data-quantity]").forEach((button) => {
     button.addEventListener("click", () => {
-      updateQuantity(button.dataset.quantity);
+      updateQuantity(button.dataset.itemId, button.dataset.quantity);
       updateCartBadge();
       renderCart();
     });
   });
 
-  document.querySelector("[data-remove-item]")?.addEventListener("click", () => {
-    removeCartItem();
-    updateCartBadge();
-    renderCart();
+  document.querySelectorAll("[data-remove-item]").forEach((button) => {
+    button.addEventListener("click", () => {
+      removeCartItem(button.dataset.removeItem);
+      updateCartBadge();
+      renderCart();
+    });
   });
+
 }
 
 function renderCheckout() {
@@ -1527,7 +1571,7 @@ function renderCheckout() {
         <div class="chk-section">
           <h2 class="chk-section__title">
             <span class="chk-num chk-num--active">1</span>
-            Informacion de contacto
+            Información de contacto
           </h2>
           <div class="chk-grid">
             <div class="field">
@@ -1541,7 +1585,7 @@ function renderCheckout() {
           </div>
           <div class="chk-grid">
             <div class="field">
-              <label class="chk-label" for="email">Correo electronico <span class="required-mark">*</span></label>
+              <label class="chk-label" for="email">Correo electrónico <span class="required-mark">*</span></label>
               <input id="email" name="email" required type="email" autocomplete="email" inputmode="email" placeholder="compras@empresa.com">
             </div>
             <div class="field">
@@ -1554,31 +1598,32 @@ function renderCheckout() {
         <div class="chk-section">
           <h2 class="chk-section__title">
             <span class="chk-num">2</span>
-            Información de envío
+            ¿Cómo quieres recibir tu pedido?
           </h2>
-          <div class="field">
-            <label class="chk-label" for="address">Direccion principal <span class="required-mark">*</span></label>
-            <input id="address" name="address" required autocomplete="street-address" placeholder="Calle 10 # 8-07">
+          <div class="chk-delivery-options" role="radiogroup" aria-label="Forma de entrega">
+            <label class="chk-delivery-card active"><input type="radio" name="deliveryType" value="retiro_tienda" checked><span><strong>Recoger en tienda</strong><small>Más rápido · Sin datos de dirección</small></span></label>
+            <label class="chk-delivery-card"><input type="radio" name="deliveryType" value="domicilio"><span><strong>Envío a domicilio</strong><small>Recíbelo en la dirección indicada</small></span></label>
           </div>
-          <div class="field">
-            <label class="chk-label" for="addressDetails">Indicaciones adicionales <span class="optional-mark">Opcional</span></label>
-            <input id="addressDetails" name="addressDetails" autocomplete="address-line2" placeholder="Apartamento 402, torre B, oficina, recepcion...">
-          </div>
-          <div class="chk-grid">
+          <div class="chk-pickup-note" id="pickupNote"><strong>Retiro en Luna Creativa</strong><span>Nuestro equipo te avisará cuando el pedido esté listo y coordinará la entrega.</span></div>
+          <div class="chk-shipping-fields" id="shippingFields" hidden>
+            <div class="field"><label class="chk-label" for="address">Dirección principal <span class="required-mark">*</span></label><input id="address" name="address" autocomplete="street-address" placeholder="Calle 10 # 8-07"></div>
+            <div class="field"><label class="chk-label" for="addressDetails">Indicaciones adicionales <span class="optional-mark">Opcional</span></label><input id="addressDetails" name="addressDetails" autocomplete="address-line2" placeholder="Apartamento, torre, oficina o recepción"></div>
+            <div class="chk-grid">
             <div class="field">
               <label class="chk-label" for="department">Departamento <span class="required-mark">*</span></label>
-              <select id="department" name="department" required autocomplete="address-level1">
+              <select id="department" name="department" autocomplete="address-level1">
                 <option value="">Cargando departamentos...</option>
               </select>
             </div>
             <div class="field">
               <label class="chk-label" for="city">Municipio <span class="required-mark">*</span></label>
-              <select id="city" name="city" required autocomplete="address-level2" disabled>
+              <select id="city" name="city" autocomplete="address-level2" disabled>
                 <option value="">Selecciona primero un departamento</option>
               </select>
             </div>
           </div>
-          <p class="checkout-location-status" id="locationStatus" aria-live="polite"></p>
+            <p class="checkout-location-status" id="locationStatus" aria-live="polite"></p>
+          </div>
           <div class="field">
             <label class="chk-label" for="notes">Notas del pedido (Opcional)</label>
             <textarea id="notes" name="notes" placeholder="Instrucciones de entrega, orden de compra o referencia interna..."></textarea>
@@ -1592,25 +1637,44 @@ function renderCheckout() {
     </div>
   `;
 
-  document.querySelector("#checkoutForm").addEventListener("submit", (event) => {
+  document.querySelector("#checkoutForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!validateCheckoutForm(event.target)) return;
     const checkoutData = Object.fromEntries(new FormData(event.target).entries());
     const department = event.target.elements.department;
     checkoutData.departmentId = checkoutData.department;
     checkoutData.department = department?.selectedOptions?.[0]?.dataset?.name || checkoutData.department;
-    createOrder(checkoutData);
-    navigate("/confirmacion");
+    const payButton = document.querySelector(".chk-wompi-btn");
+    const feedback = document.querySelector("#checkoutFeedback");
+    payButton.disabled = true;
+    feedback.classList.remove("is-error");
+    feedback.textContent = "Preparando tu pedido seguro…";
+    try {
+      const pickup = checkoutData.deliveryType === "retiro_tienda";
+      const order = preparedCheckoutOrder || await createStoreOrder({
+        cliente: { nombre: checkoutData.customerName, empresa: checkoutData.company, email: checkoutData.email, telefono: checkoutData.phone },
+        envio: { tipo_entrega: checkoutData.deliveryType, direccion: pickup ? "" : checkoutData.address, referencia: pickup ? "" : checkoutData.addressDetails, departamento: pickup ? "" : checkoutData.department, ciudad: pickup ? "" : checkoutData.city },
+        items: checkoutCartItems(),
+        notas: checkoutData.notes || "",
+        total: cartSubtotal(),
+      });
+      preparedCheckoutOrder = order;
+      createOrder({ ...checkoutData, code: order.codigo_tracking || order.tracking_token || order.codigo, serverOrder: order });
+      sessionStorage.setItem("luna_creativa_tracking_pending", order.codigo_tracking || order.tracking_token || "");
+      await openWompiCheckout(order.wompi, order);
+    } catch (error) {
+      feedback.textContent = error.message || "No fue posible preparar el pago.";
+      feedback.classList.add("is-error");
+      payButton.disabled = false;
+    }
   });
   bindCheckoutValidation();
+  bindDeliveryChoice();
   void loadCheckoutLocations();
 }
 
 function checkoutSummaryMarkup() {
   const subtotal = cartSubtotal();
-  const totalQty = state.cart.reduce((sum, item) => sum + item.quantity, 0);
-  const discount = totalQty >= 10 ? Math.round(subtotal * 0.15) : 0;
-  const total = subtotal - discount;
   const hasItems = state.cart.length > 0;
 
   return `
@@ -1622,17 +1686,17 @@ function checkoutSummaryMarkup() {
     }
     <div class="chk-breakdown">
       <div class="chk-row"><span>Subtotal</span><span>${money(subtotal)}</span></div>
-      ${discount > 0 ? `<div class="chk-row chk-row--discount"><span>Descuento Bulk (15%)</span><span>-${money(discount)}</span></div>` : ""}
-      <div class="chk-row"><span>Envío</span><span>Por confirmar</span></div>
+      <div class="chk-row"><span>Entrega</span><span id="summaryDelivery">Recoger en tienda</span></div>
     </div>
     <div class="chk-total">
       <span>Total a pagar</span>
-      <strong>${money(hasItems ? total : 0)}</strong>
+      <strong>${money(hasItems ? subtotal : 0)}</strong>
     </div>
-    <p class="chk-shipping-note">El envio se confirmara despues de validar transportadora, ciudad y direccion.</p>
+    <p class="chk-shipping-note">Revisa tu pedido antes de continuar al pago seguro con Wompi.</p>
     <button class="chk-wompi-btn" type="submit" form="checkoutForm" ${hasItems ? "" : "disabled"}>
       ${wompiIcon()} Pagar con Wompi
     </button>
+    <p class="checkout-feedback" id="checkoutFeedback" aria-live="polite"></p>
     <p class="chk-ssl">Pago seguro con Wompi</p>
   `;
 }
@@ -1644,7 +1708,7 @@ function chkItemMarkup(item) {
       ${img ? `<img class="chk-item__img" src="${img}" alt="${escapeHtml(item.productName)}">` : `<div class="chk-item__img chk-item__img--placeholder">${placeholderMedia(item.productName)}</div>`}
       <div class="chk-item__info">
         <strong>${escapeHtml(item.productName)}</strong>
-        <span>${item.quantity} unidad${item.quantity === 1 ? "" : "es"} &middot; ${escapeHtml(item.variant.label)}</span>
+        <span>${item.quantity} unidad${item.quantity === 1 ? "" : "es"}${item.variant?.label ? ` &middot; ${escapeHtml(item.variant.label)}` : ""}</span>
       </div>
       <span class="chk-item__price">${money(item.unitPrice * item.quantity)}</span>
     </div>
@@ -1665,6 +1729,27 @@ function bindCheckoutValidation() {
   });
 }
 
+function bindDeliveryChoice() {
+  const form = document.querySelector("#checkoutForm");
+  const shippingFields = document.querySelector("#shippingFields");
+  const pickupNote = document.querySelector("#pickupNote");
+  const summary = document.querySelector("#summaryDelivery");
+  const address = form.elements.address;
+  const department = form.elements.department;
+  const city = form.elements.city;
+  form.querySelectorAll('input[name="deliveryType"]').forEach((radio) => radio.addEventListener("change", () => {
+    const delivery = radio.checked ? radio.value : form.elements.deliveryType.value;
+    const homeDelivery = delivery === "domicilio";
+    shippingFields.hidden = !homeDelivery;
+    pickupNote.hidden = homeDelivery;
+    address.required = homeDelivery;
+    department.required = homeDelivery;
+    city.required = homeDelivery;
+    summary.textContent = homeDelivery ? "Envío a domicilio" : "Recoger en tienda";
+    form.querySelectorAll(".chk-delivery-card").forEach((card) => card.classList.toggle("active", Boolean(card.querySelector("input")?.checked)));
+  }));
+}
+
 function validateCheckoutForm(form) {
   let valid = true;
   form.querySelectorAll(".field-error").forEach((item) => item.remove());
@@ -1674,10 +1759,8 @@ function validateCheckoutForm(form) {
     ["customerName", "Escribe tu nombre completo."],
     ["email", "Escribe un correo válido."],
     ["phone", "Escribe un celular colombiano de 10 digitos."],
-    ["address", "Escribe la direccion principal."],
-    ["department", "Selecciona el departamento."],
-    ["city", "Selecciona el municipio."],
   ];
+  if (form.elements.deliveryType.value === "domicilio") validations.push(["address", "Escribe la dirección principal."], ["department", "Selecciona el departamento."], ["city", "Selecciona el municipio."]);
 
   validations.forEach(([fieldId, message]) => {
     const field = form.elements[fieldId];
@@ -1689,6 +1772,55 @@ function validateCheckoutForm(form) {
   });
 
   return valid;
+}
+
+async function openWompiCheckout(wompi, order) {
+  await loadWompiWidget();
+  if (!window.WidgetCheckout) throw new Error("Wompi no pudo cargarse. Intenta nuevamente.");
+  const options = {
+    currency: wompi.currency,
+    amountInCents: Number(wompi.amount_in_cents),
+    reference: wompi.reference,
+    publicKey: wompi.public_key,
+    signature: { integrity: wompi.signature_integrity || wompi.signature },
+  };
+  if (wompi.redirect_url) options.redirectUrl = wompi.redirect_url;
+  if (wompi.customer_data) options.customerData = {
+    email: wompi.customer_data.email,
+    fullName: wompi.customer_data.full_name,
+    phoneNumber: wompi.customer_data.phone_number,
+    phoneNumberPrefix: wompi.customer_data.phone_number_prefix,
+  };
+  if (wompi.shipping_address) options.shippingAddress = {
+    addressLine1: wompi.shipping_address.address_line_1,
+    addressLine2: wompi.shipping_address.address_line_2,
+    country: wompi.shipping_address.country,
+    city: wompi.shipping_address.city,
+    region: wompi.shipping_address.region,
+    phoneNumber: wompi.shipping_address.phone_number,
+    name: wompi.shipping_address.name,
+  };
+  const checkout = new window.WidgetCheckout(options);
+  checkout.open((result) => {
+    state.lastOrder = { ...(state.lastOrder || {}), code: order.codigo_tracking || order.tracking_token || order.codigo, orderCode: order.codigo, transactionId: result?.transaction?.id || "", transactionStatus: result?.transaction?.status || "", total: order.total, createdAt: new Date().toISOString() };
+    saveState();
+    navigate("/confirmacion");
+  });
+}
+
+function loadWompiWidget() {
+  if (window.WidgetCheckout) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-luna-wompi="true"]');
+    if (existing) { existing.addEventListener("load", resolve, { once: true }); existing.addEventListener("error", reject, { once: true }); return; }
+    const script = document.createElement("script");
+    script.src = "https://checkout.wompi.co/widget.js";
+    script.async = true;
+    script.dataset.lunaWompi = "true";
+    script.onload = resolve;
+    script.onerror = () => { script.remove(); reject(new Error("No fue posible cargar el pago seguro de Wompi.")); };
+    document.head.append(script);
+  });
 }
 
 function showFieldError(field, message) {
@@ -2080,6 +2212,10 @@ function requestedProductSlug() {
   return String(params.get("slug") || params.get("producto") || "").trim().toLowerCase();
 }
 
+function requestedEditCartItemId() {
+  return String(new URLSearchParams(window.location.search).get("editar") || "").trim();
+}
+
 function resolveRequestedProductSlug(products, requestedSlug) {
   if (!requestedSlug) return products[0]?.slug || "";
 
@@ -2166,13 +2302,13 @@ function primaryPricingField(product) {
 function currentProductPrice(product) {
   const pricingField = primaryPricingField(product);
   if (pricingField) {
-    const currentValue = String(state.personalization.values[pricingField.codigo] || pricingField.valores?.[0]?.valor || "");
+    const currentValue = String(activePersonalization().values[pricingField.codigo] || pricingField.valores?.[0]?.valor || "");
     const selectedOption =
       pricingField.valores.find((option) => String(option.valor) === currentValue) || pricingField.valores[0] || null;
     return Number(selectedOption?.precio || product.precio_base || 0);
   }
 
-  return Number(state.selectedVariant?.price || product.variantes?.[0]?.precio || product.precio_base || 0);
+  return Number(activeVariant()?.price || product.variantes?.[0]?.precio || product.precio_base || 0);
 }
 
 function resolveMediaUrl(url = "") {

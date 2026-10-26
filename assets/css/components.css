@@ -260,6 +260,8 @@
 }
 
 .product-card {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -289,6 +291,9 @@
 }
 
 .product-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 0.95rem 1.25rem 1.25rem;
 }
 
@@ -338,22 +343,25 @@
   box-shadow: 0 10px 22px rgba(16, 27, 45, 0.12);
 }
 
-.rating {
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
-.stars {
-  color: var(--orange);
-  letter-spacing: 0;
-}
-
 .price {
   margin: 0.45rem 0 0.2rem;
 }
 
 .price del {
   color: var(--muted);
+}
+
+.product-card__description {
+  display: -webkit-box;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.product-card__body .product-cta {
+  margin-top: auto;
 }
 
 .sale-price {
@@ -536,6 +544,33 @@
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.48);
   font-size: 0.86rem;
+}
+
+.footer-payments {
+  display: grid;
+  justify-items: start;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.footer-payments__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 28px;
+  overflow: hidden;
+  border: 1px solid #e7e9f1;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.footer-payments__logo img {
+  width: 96px;
+  max-width: none;
+  height: 32px;
+  flex-shrink: 0;
+  object-fit: cover;
 }
 
 .contact-float {

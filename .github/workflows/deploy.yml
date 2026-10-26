@@ -1,27 +1,109 @@
-name: Deploy tienda
+name: Preparar y publicar web principal
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publicar en la raíz. Activar solo tras respaldo y revisión del paquete."
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: luna-web-root-production
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  prepare:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comprobar rutas y aislamiento del paquete
+        run: node --test tests/deploy.test.mjs
+      - name: Revisar sintaxis de endpoints PHP
+        shell: bash
+        run: |
+          for php_file in api/*.php; do php -l "$php_file"; done
+      - name: Preparar solo archivos públicos
+        run: node scripts/prepare-deploy.mjs
+      - name: Guardar paquete para revisión o reversión de esta versión
+        uses: actions/upload-artifact@v4
+        with:
+          name: luna-web-root-${{ github.sha }}
+          path: .deploy-root/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
 
-      - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+  deploy:
+    if: ${{ inputs.publish }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production-home
+    steps:
+      - name: Descargar el paquete revisado de esta ejecución
+        uses: actions/download-artifact@v4
+        with:
+          name: luna-web-root-${{ github.sha }}
+          path: .deploy-root
+      - name: Verificar destino configurado para la raíz
+        env:
+          ROOT_DIR: ${{ secrets.FTP_HOME_DIR }}
+          DEPLOY_USER: ${{ secrets.FTP_USERNAME }}
+        shell: bash
+        run: |
+          if [ "$DEPLOY_USER" != 'deploy-home@lunacreativa.com.co' ]; then
+            echo "Usa la cuenta deploy-home dedicada a la web comercial, no una de Cotizador."
+            exit 1
+          fi
+          if [ "$ROOT_DIR" != '/' ]; then
+            echo "Para deploy-home, FTP_HOME_DIR debe ser / dentro de su raíz confinada a public_html."
+            exit 1
+          fi
+      - name: Publicar web comercial por FTPS sin limpiar otras aplicaciones
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./
-          server-dir: /public_html/tienda/
+          protocol: ftps
+          port: 21
+          local-dir: ./.deploy-root/
+          server-dir: ${{ secrets.FTP_HOME_DIR }}
+          state-name: .ftp-deploy-luna-web-root.json
+          dangerous-clean-slate: false
           exclude: |
             **/.git*
-            **/.git*/**
             **/.github/**
             **/.DS_Store
-            README.md
+            cotizador/**
+            cotizador-pruebas/**
+            landing-rompe/**
+            tienda/**
+            shared/**
+            views/**
+            wp-admin/**
+            wp-content/**
+            wp-includes/**
+            backup-*/**
+            .well-known/**
+            cgi-bin/**
+            docs/**
+            scripts/**
+            catalogo/borradores/**
+            api/config.php
+      - name: Comprobar portada, catálogo y archivos
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --location --retry 3 "https://lunacreativa.com.co/?deploy=${GITHUB_SHA}" -o /tmp/luna-home-check.html
+          grep -Fq 'assets/js/app.js' /tmp/luna-home-check.html
+          curl --fail --silent --show-error --location --retry 3 "https://lunacreativa.com.co/assets/js/config.js?deploy=${GITHUB_SHA}" -o /dev/null
+          curl --fail --silent --show-error --location --retry 3 "https://lunacreativa.com.co/api/tienda_publica.php?action=catalogo" -o /tmp/luna-catalog-check.json
+          node -e 'const data=JSON.parse(require("fs").readFileSync("/tmp/luna-catalog-check.json","utf8")); if(data.status!=="success") process.exit(1)'
