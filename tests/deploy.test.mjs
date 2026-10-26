@@ -21,7 +21,7 @@ test("rutas de raíz y compatibilidad con /tienda sin falsos prefijos", () => {
 
 test("paquete solo público y sin otras aplicaciones ni borradores internos", () => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "luna-deploy-test-"));
-  for (const entry of ["scripts", "assets", "components", "api", "legal", "catalogo", "carrito", "checkout", "confirmacion", "producto", "servicios", "seguimiento", "visita", "index.html", ".htaccess"]) {
+  for (const entry of ["scripts", "deploy", "assets", "components", "api", "legal", "catalogo", "carrito", "checkout", "confirmacion", "producto", "servicios", "seguimiento", "visita", "index.html", ".htaccess"]) {
     fs.cpSync(path.join(root, entry), path.join(temp, entry), { recursive: true });
   }
   execFileSync(process.execPath, [path.join(temp, "scripts/prepare-deploy.mjs")]);
@@ -30,6 +30,7 @@ test("paquete solo público y sin otras aplicaciones ni borradores internos", ()
     assert.equal(fs.existsSync(path.join(packaged, blocked)), false, blocked);
   for (const required of ["index.html", ".htaccess", "api/backend_path.php", "confirmacion/index.html", "legal/index.html", "assets/js/product-gallery.js"])
     assert.equal(fs.existsSync(path.join(packaged, required)), true, required);
+  assert.deepEqual(fs.readdirSync(path.join(packaged, "tienda")), [".htaccess"]);
   assert.throws(() => execFileSync(process.execPath, [path.join(temp, "scripts/prepare-deploy.mjs")], { stdio: "pipe" }));
   console.log(`Paquete de comprobación conservado en ${packaged}`);
 });

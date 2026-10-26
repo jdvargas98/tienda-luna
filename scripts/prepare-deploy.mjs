@@ -26,6 +26,10 @@ function copy(relative) {
 for (const file of files) copy(file);
 for (const directory of [...pages, "assets", "components"]) copy(directory);
 for (const endpoint of endpoints) copy(`api/${endpoint}`);
+// LiteSpeed permite que las reglas propias de /tienda prevalezcan sobre las de raíz.
+// Solo sustituir su entrada .htaccess: no copiar ni gestionar sus archivos antiguos.
+fs.mkdirSync(path.join(destination, "tienda"));
+fs.copyFileSync(path.join(root, "deploy/legacy-tienda.htaccess"), path.join(destination, "tienda/.htaccess"));
 
 const forbidden = ["cotizador", "cotizador-pruebas", "landing-rompe", "shared", "views", "wp-admin", "wp-content", "wp-includes", ".git", ".github", "docs", "scripts", "tests", "catalogo/borradores", "api/config.php"];
 for (const entry of forbidden) {

@@ -86,7 +86,6 @@ jobs:
             cotizador/**
             cotizador-pruebas/**
             landing-rompe/**
-            tienda/**
             shared/**
             views/**
             wp-admin/**

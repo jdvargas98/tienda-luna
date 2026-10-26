@@ -1,0 +1,10 @@
+# Entrada heredada: conservar APIs y archivos, redirigir solo navegación comercial.
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^$ https://lunacreativa.com.co/ [R=302,L]
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^(catalogo|producto|carrito|checkout|confirmacion|visita|seguimiento|servicios|legal)(/.*)?$ https://lunacreativa.com.co/$1$2 [R=302,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.html [L]
